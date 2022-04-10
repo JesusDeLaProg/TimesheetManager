@@ -1,7 +1,0 @@
-{
-    "compilerOptions": {
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": true
-    },
-    "importMap": "./import_map.jsonc"
-}
