@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@tm/types/*": ["../types/*"],
-      "//*": ["./src/*"]
+      "//*": ["./src/*"],
+      "//test/*": ["./test/*"]
     }
   }
 }
