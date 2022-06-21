@@ -8,7 +8,12 @@
 			"group": "test",
 			"problemMatcher": [],
 			"label": "npm: test - tm-server",
-			"detail": "jest"
+			"detail": "jest",
+			"options": {
+				"env": {
+					"GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager-test.json"
+				}
+			}
 		}
 	]
 }

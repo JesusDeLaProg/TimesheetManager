@@ -5,6 +5,31 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Attach",
+            "port": 9229,
+            "request": "attach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Debug Tests",
+            "request": "launch",
+            "runtimeArgs": [
+                "run",
+                "test:debug"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager-test.json"
+            },
+            "type": "node",
+        },
+        {
             "name": "Debug Server",
             "request": "launch",
             "cwd": "${workspaceFolder}/tm-server",
@@ -16,6 +41,9 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "env": {
+                "GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager.json"
+            },
             "type": "node",
             "console": "integratedTerminal"
         }
