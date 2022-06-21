@@ -1,15 +1,38 @@
 import { IQueryOptions } from '@tm/types/query_options';
-import { IsInt, IsArray, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsArray,
+  Min,
+  IsOptional,
+  IsString,
+  IsIn,
+  ValidateNested,
+} from 'class-validator';
+
+class SortOption {
+  @IsString()
+  field: string;
+
+  @IsString()
+  @IsIn(['asc', 'desc'])
+  direction: 'asc' | 'desc';
+}
 
 export class QueryOptions implements IQueryOptions {
-    @IsArray({ each: true })
-    sort?: string[];
+  @IsArray()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SortOption)
+  sort?: SortOption[];
 
-    @IsInt()
-    @Min(0)
-    limit?: number;
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  limit?: number;
 
-    @IsInt()
-    @Min(0)
-    skip?: number;
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  skip?: number;
 }

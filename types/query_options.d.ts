@@ -1,6 +1,5 @@
-
 export declare interface IQueryOptions {
-    sort?: string[];
+    sort?: { field: string, direction: 'asc' | 'desc' }[];
     skip?: number;
     limit?: number;
 }

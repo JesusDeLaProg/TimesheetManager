@@ -1,11 +1,23 @@
 import { Module } from '@nestjs/common';
 import { AppController } from '//app.controller';
 import { AppService } from '//app.service';
-import { BaseController } from '//controllers/base/base.controller';
+import { CrudService } from '//services/crud/crud.service';
+import { UserController } from '//controllers/user/user.controller';
+import { UserService } from '//services/user/user.service';
+import { ROOT_DOC } from '//config/constants';
+import { root } from '//config/db';
 
 @Module({
   imports: [],
-  controllers: [AppController, BaseController],
-  providers: [AppService],
+  controllers: [AppController, UserController],
+  providers: [
+    AppService,
+    CrudService,
+    UserService,
+    {
+      provide: ROOT_DOC,
+      useValue: root,
+    },
+  ],
 })
 export class AppModule {}
