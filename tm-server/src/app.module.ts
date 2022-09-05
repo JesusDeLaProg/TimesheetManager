@@ -7,6 +7,7 @@ import { ProjectService } from '//services/project/project.service';
 import { UserService } from '//services/user/user.service';
 import { ROOT_DOC } from '//config/constants';
 import { root } from '//config/db';
+import { ActivityService } from './services/activity/activity.service';
 
 @Module({
   imports: [],
@@ -20,6 +21,7 @@ import { root } from '//config/db';
       useValue: root,
     },
     ProjectService,
+    ActivityService,
   ],
 })
 export class AppModule {}

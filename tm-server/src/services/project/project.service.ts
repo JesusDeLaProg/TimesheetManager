@@ -10,6 +10,7 @@ import { Project } from '//dtos/project';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { CrudService } from '//services/crud/crud.service';
+import { AuthorizationUtils } from '//utils/authorization';
 
 @Injectable()
 export class ProjectService extends CrudService<IProject> {
@@ -29,14 +30,7 @@ export class ProjectService extends CrudService<IProject> {
     user: User,
     originalDocumentOrQuery: IProject | Query<IProject>,
   ): boolean | Query<IProject> {
-    if (originalDocumentOrQuery instanceof Query) {
-      if (user.role >= UserRole.USER) {
-        return originalDocumentOrQuery;
-      } else {
-        return null;
-      }
-    }
-    return user.role >= UserRole.USER;
+    return AuthorizationUtils.authorizeReadForRoleAtLeast(user, UserRole.USER, originalDocumentOrQuery);
   }
 
   protected authorizeCreate(

@@ -6,9 +6,10 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
 import { ValidationError } from 'class-validator';
-import { CrudService, ValidationUtils } from '//services/crud/crud.service';
+import { CrudService } from '//services/crud/crud.service';
 import { ROOT_DOC } from '//config/constants';
 import { User } from '//dtos/user';
+import { ValidationUtils } from '//utils/validation';
 
 @Injectable()
 export class UserService extends CrudService<IUser> {
