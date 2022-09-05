@@ -1,14 +1,12 @@
 import {
   CollectionReference,
   DocumentReference,
-  Firestore,
   Query,
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
-import { plainToInstance } from 'class-transformer';
 import { ValidationError } from 'class-validator';
-import { CrudService, ValidationUtils } from '../crud/crud.service';
+import { CrudService, ValidationUtils } from '//services/crud/crud.service';
 import { ROOT_DOC } from '//config/constants';
 import { User } from '//dtos/user';
 
@@ -36,7 +34,7 @@ export class UserService extends CrudService<IUser> {
         case UserRole.SUPERADMIN:
           return originalDocumentOrQuery;
         default:
-          return originalDocumentOrQuery.limit(0);
+          return null;
       }
     } else {
       switch (user.role) {

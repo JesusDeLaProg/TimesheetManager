@@ -1,25 +1,14 @@
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
-import { closeFirestore, initFirestore } from '//test/test-base';
+import { closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
 import { ROOT_DOC } from '//config/constants';
-import { User } from '//dtos/user';
 
 describe('UserService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: UserService;
-  const testUser: User = {
-    _id: 'abcd',
-    username: 'test-user',
-    firstName: 'test',
-    lastName: 'user',
-    email: 'test@tm.net',
-    billingGroups: [],
-    isActive: true,
-    role: UserRole.ADMIN,
-  };
 
   beforeAll(async () => {
     ({ db, root } = initFirestore());

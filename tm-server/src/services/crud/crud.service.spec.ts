@@ -1,6 +1,10 @@
 import { CollectionReference, Firestore, Query } from '@google-cloud/firestore';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { initFirestore, closeFirestore } from '//test/test-base';
+import {
+  initFirestore,
+  closeFirestore,
+  addDocumentsToCollection,
+} from '//test/test-base';
 import { CrudService } from './crud.service';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
 
@@ -67,17 +71,6 @@ describe('CrudService', () => {
   let root: FirebaseFirestore.DocumentReference;
   let collection: CollectionReference<Data>;
 
-  function addDocumentsToCollection(documents: any[]) {
-    return Promise.all(
-      documents.map(async (data) => {
-        const doc = collection.doc();
-        Object.assign(doc, data);
-        await doc.set(data);
-        return doc;
-      }),
-    );
-  }
-
   beforeAll(async () => {
     ({ db, root } = initFirestore());
     collection = root.collection('base') as CollectionReference<Data>;
@@ -99,7 +92,11 @@ describe('CrudService', () => {
   });
 
   it('get() returns all items', async () => {
-    await addDocumentsToCollection([{ data: 1 }, { data: 2 }, { data: 3 }]);
+    await addDocumentsToCollection(collection, [
+      { data: 1 },
+      { data: 2 },
+      { data: 3 },
+    ]);
     expect(await service.get(dummyUser)).toEqual(
       expect.arrayContaining([
         { _id: expect.any(String), data: 1 },
@@ -110,7 +107,7 @@ describe('CrudService', () => {
   });
 
   it('get(queryOptions) returns only requested items', async () => {
-    await addDocumentsToCollection([
+    await addDocumentsToCollection(collection, [
       { data: 1 },
       { data: 2 },
       { data: 3 },
@@ -132,7 +129,7 @@ describe('CrudService', () => {
   });
 
   it('count() returns total number of documents in collection', async () => {
-    await addDocumentsToCollection([
+    await addDocumentsToCollection(collection, [
       { data: 1 },
       { data: 2 },
       { data: 3 },
@@ -143,7 +140,7 @@ describe('CrudService', () => {
   });
 
   it('getById() returns total number of documents in collection', async () => {
-    const docs = await addDocumentsToCollection([
+    const docs = await addDocumentsToCollection(collection, [
       { data: 1 },
       { data: 2 },
       { data: 3 },
@@ -185,7 +182,7 @@ describe('CrudService', () => {
   });
 
   it('update(valid) should return updated doc', async () => {
-    const docs = await addDocumentsToCollection([{ data: 1 }]);
+    const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
     expect(await service.update(dummyUser, docs[0].id, { data: 10 })).toEqual({
       _id: docs[0].id,
       data: 10,
@@ -194,7 +191,7 @@ describe('CrudService', () => {
   });
 
   it('update(invalid) should return validation errors', async () => {
-    const docs = await addDocumentsToCollection([{ data: 1 }]);
+    const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
     expect(
       await service.update(dummyUser, docs[0].id, { data: 'test' }),
     ).toEqual({
@@ -204,13 +201,13 @@ describe('CrudService', () => {
   });
 
   it('delete(id) should delete doc', async () => {
-    const docs = await addDocumentsToCollection([{ data: 1 }]);
+    const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
     expect(await service.delete(dummyUser, docs[0].id)).toEqual(true);
     expect(await collection.listDocuments()).toHaveLength(0);
   });
 
   it('searchByField(field, value) should return requested docs', async () => {
-    const docs = await addDocumentsToCollection([
+    const docs = await addDocumentsToCollection(collection, [
       { data: 1 },
       { data: 2 },
       { data: 3 },
@@ -223,7 +220,7 @@ describe('CrudService', () => {
   });
 
   it('prefixSearchByField(field, prefix) should delete doc', async () => {
-    const docs = await addDocumentsToCollection([
+    const docs = await addDocumentsToCollection(collection, [
       { data: '1' },
       { data: '2' },
       { data: '3' },

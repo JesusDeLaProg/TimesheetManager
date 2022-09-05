@@ -154,8 +154,13 @@ export class CrudService<T extends { _id?: StringId }> {
   }
 
   async count(user: User): Promise<number> {
-    const query = this.authorizeRead(user, this.collection);
-    return (await query.select().get()).size;
+    const prefilteredQuery = this.authorizeRead(user, this.collection);
+    if (!prefilteredQuery)
+      throw new Status(
+        403,
+        `Lecture refusée sur ressource ${this.collection.path}`,
+      );
+    return (await prefilteredQuery.select().get()).size;
   }
 
   protected async internalValidate(
