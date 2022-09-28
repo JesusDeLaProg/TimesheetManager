@@ -37,6 +37,7 @@ export class BillingGroup {
   projectType: ProjectType;
 
   @IsArray()
+  @ValidateNested({each: true})
   @Type(() => BillingRate)
   timeline: BillingRate[];
 }
@@ -67,8 +68,8 @@ export class User implements IUser {
   password?: string;
 
   @IsArray()
+  @ValidateNested({each: true})
   @Type(() => BillingGroup)
-  @ValidateNested()
   billingGroups: BillingGroup[];
 
   @IsBoolean()

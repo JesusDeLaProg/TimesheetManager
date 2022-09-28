@@ -22,7 +22,7 @@ class SortOption {
 export class QueryOptions implements IQueryOptions {
   @IsArray()
   @IsOptional()
-  @ValidateNested()
+  @ValidateNested({each: true})
   @Type(() => SortOption)
   sort?: SortOption[];
 
