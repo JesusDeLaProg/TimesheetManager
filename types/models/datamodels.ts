@@ -42,11 +42,11 @@ export interface IActivity {
     name: string;
 }
 
-export interface IPhase<TActivity = StringId> {
+export interface IPhase {
     _id?: StringId;
     code: string;
     name: string;
-    activities: TActivity[];
+    activities: StringId[];
 }
 
 export interface IClient {
@@ -54,34 +54,28 @@ export interface IClient {
     name: string;
 }
 
-export interface IProject<TClient = StringId> {
+export interface IProject {
     _id?: StringId;
     code: string;
     name: string;
-    client: TClient;
+    client: StringId;
     type: ProjectType;
     isActive: boolean;
 }
 
-export interface ITimesheet<
-TUser = StringId,
-TTimesheetLine = ITimesheetLine,
-TRoadsheetLine = IRoadsheetLine> {
+export interface ITimesheet {
     _id?: StringId;
-    user: TUser;
+    user: StringId;
     begin: Date;
     end: Date;
-    lines: TTimesheetLine[];
-    roadsheetLines: TRoadsheetLine[];
+    lines: ITimesheetLine[];
+    roadsheetLines: IRoadsheetLine[];
 }
 
-export interface ITimesheetLine<
-TProject = StringId,
-TPhase = StringId,
-TActivity = StringId> {
-    project: TProject;
-    phase: TPhase;
-    activity: TActivity;
+export interface ITimesheetLine {
+    project: StringId;
+    phase: StringId;
+    activity: StringId;
     divers?: string;
     entries: ITimesheetEntry[];
 }
@@ -91,8 +85,8 @@ export interface ITimesheetEntry {
     time: number;
 }
 
-export interface IRoadsheetLine<TProject = StringId> {
-    project: TProject;
+export interface IRoadsheetLine {
+    project: StringId;
     travels: ITravel[];
 }
 
