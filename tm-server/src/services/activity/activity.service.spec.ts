@@ -13,7 +13,7 @@ describe('ActivityService', () => {
 
   beforeAll(async () => {
     ({ db, root } = initFirestore());
-    collection = root.collection('project') as CollectionReference<IActivity>;
+    collection = root.collection('activity') as CollectionReference<IActivity>;
   });
 
   afterAll(async () => {
