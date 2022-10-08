@@ -41,7 +41,7 @@ export class CrudService<T extends { _id?: StringId }> {
     this.collection = collection.withConverter(this.documentConverter);
   }
 
-  private applyErrors(from: ValidationError[], to: ValidationResult<T>) {
+  private addErrors(from: ValidationError[], to: ValidationResult<T>) {
     for (const error of from) {
       if (to[error.property] === undefined) {
         to[error.property] = [];
@@ -144,8 +144,8 @@ export class CrudService<T extends { _id?: StringId }> {
       objectToValidate = plainToInstance(this.objectClass, object);
     }
     const errors = {} as ValidationResult<T>;
-    this.applyErrors(await validate(objectToValidate), errors);
-    this.applyErrors(
+    this.addErrors(await validate(objectToValidate), errors);
+    this.addErrors(
       await this.internalValidate(objectToValidate, forCreation),
       errors,
     );
