@@ -18,33 +18,33 @@ export class ProjectService extends CrudService<IProject> {
     super(root.collection('project') as CollectionReference<IProject>, Project);
   }
 
-  protected authorizeRead(
+  protected async authorizeRead(
     user: User,
-    originalDocumentOrQuery: IProject<string>,
-  ): boolean;
-  protected authorizeRead(
+    originalDocumentOrQuery: IProject,
+  ): Promise<boolean>;
+  protected async authorizeRead(
     user: User,
-    originalDocumentOrQuery: Query<IProject<string>>,
-  ): Query<IProject<string>>;
-  protected authorizeRead(
+    originalDocumentOrQuery: Query<IProject>,
+  ): Promise<Query<IProject>>;
+  protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: IProject | Query<IProject>,
-  ): boolean | Query<IProject> {
+  ): Promise<boolean | Query<IProject>> {
     return AuthorizationUtils.authorizeReadForRoleAtLeast(user, UserRole.USER, originalDocumentOrQuery);
   }
 
-  protected authorizeCreate(
+  protected async authorizeCreate(
     user: User,
-    updatedDocument: IProject<string>,
-  ): boolean {
+    updatedDocument: IProject,
+  ): Promise<boolean> {
     return user.role >= UserRole.SUBADMIN;
   }
 
-  protected authorizeUpdate(
+  protected async authorizeUpdate(
     user: User,
-    originalDocument: IProject<string>,
-    updatedDocument: IProject<string>,
-  ): boolean {
+    originalDocument: IProject,
+    updatedDocument: IProject,
+  ): Promise<boolean> {
     return user.role >= UserRole.SUBADMIN;
   }
 

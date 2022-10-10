@@ -50,15 +50,15 @@ export class CrudService<T extends { _id?: StringId }> {
     }
   }
 
-  protected authorizeRead(user: User, originalDocumentOrQuery: T): boolean;
-  protected authorizeRead(
+  protected async authorizeRead(user: User, originalDocumentOrQuery: T): Promise<boolean>;
+  protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<T>,
-  ): Query<T> | null;
-  protected authorizeRead(
+  ): Promise<Query<T> | null>;
+  protected  async authorizeRead(
     user: User,
     originalDocumentOrQuery: T | Query<T>,
-  ): boolean | Query<T> | null {
+  ): Promise<boolean | Query<T> | null> {
     if (originalDocumentOrQuery instanceof Query) {
       return null;
     } else {
@@ -66,18 +66,18 @@ export class CrudService<T extends { _id?: StringId }> {
     }
   }
 
-  protected authorizeCreate(user: User, updatedDocument: T): boolean {
+  protected async authorizeCreate(user: User, updatedDocument: T): Promise<boolean> {
     return false;
   }
 
-  protected authorizeUpdate(
+  protected async authorizeUpdate(
     user: User,
     originalDocument: T,
     updatedDocument: T,
-  ): boolean {
+  ): Promise<boolean> {
     return false;
   }
-  protected authorizeDelete(user: User, originalDocument: T): boolean {
+  protected async authorizeDelete(user: User, originalDocument: T): Promise<boolean> {
     return false;
   }
 
@@ -107,7 +107,7 @@ export class CrudService<T extends { _id?: StringId }> {
   }
 
   async get(user: User, queryOptions?: QueryOptions): Promise<T[]> {
-    const prefilteredQuery = this.authorizeRead(user, this.collection);
+    const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
       throw new Status(
         403,
@@ -119,7 +119,7 @@ export class CrudService<T extends { _id?: StringId }> {
   }
 
   async count(user: User): Promise<number> {
-    const prefilteredQuery = this.authorizeRead(user, this.collection);
+    const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
       throw new Status(
         403,
@@ -153,16 +153,21 @@ export class CrudService<T extends { _id?: StringId }> {
     return errors;
   }
 
+  protected async prepareForSaving(object: T, forCreation: boolean): Promise<T> {
+    return object;
+  }
+
   async create(
     user: User,
     object: any,
   ): Promise<ValidationResult<T> | MutationResult<T>> {
-    const newDocument = plainToInstance(this.objectClass, object);
+    let newDocument = plainToInstance(this.objectClass, object);
     const validationResult = await this.validate(newDocument, true);
     if (!validationResult.__success) {
       return validationResult;
     } else {
       if (this.authorizeCreate(user, newDocument)) {
+        newDocument = await this.prepareForSaving(newDocument, true);
         return Object.assign(
           { __success: true as true },
           (await (await this.collection.add(newDocument)).get()).data(),
@@ -186,8 +191,9 @@ export class CrudService<T extends { _id?: StringId }> {
       return validationResult;
     } else {
       const originalDocument = await this.getById(user, id);
-      const updatedDocument = plainToInstance(this.objectClass, object);
+      let updatedDocument = plainToInstance(this.objectClass, object);
       if (this.authorizeUpdate(user, originalDocument, updatedDocument)) {
+        updatedDocument = await this.prepareForSaving(updatedDocument, false);
         const docRef = this.collection.doc(id);
         await docRef.set(updatedDocument);
         return Object.assign(
@@ -215,7 +221,7 @@ export class CrudService<T extends { _id?: StringId }> {
     value: any,
     queryOptions?: QueryOptions,
   ): Promise<T[]> {
-    const prefilteredQuery = this.authorizeRead(user, this.collection);
+    const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
       throw new Status(
         403,
@@ -235,7 +241,7 @@ export class CrudService<T extends { _id?: StringId }> {
     prefix: string,
     queryOptions?: QueryOptions,
   ): Promise<T[]> {
-    const prefilteredQuery = this.authorizeRead(user, this.collection);
+    const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
       throw new Status(
         403,

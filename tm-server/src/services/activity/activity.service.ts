@@ -13,17 +13,17 @@ export class ActivityService extends CrudService<IActivity> {
       super(root.collection('activity') as CollectionReference<IActivity>, Activity);
     }
 
-    protected authorizeRead(user: User, originalDocumentOrQuery: IActivity): boolean;
-    protected authorizeRead(user: User, originalDocumentOrQuery: Query<IActivity>): Query<IActivity>;
-    protected authorizeRead(user: User, originalDocumentOrQuery: IActivity | Query<IActivity>): boolean | Query<IActivity> {
+    protected async authorizeRead(user: User, originalDocumentOrQuery: IActivity): Promise<boolean>;
+    protected async authorizeRead(user: User, originalDocumentOrQuery: Query<IActivity>): Promise<Query<IActivity>>;
+    protected async authorizeRead(user: User, originalDocumentOrQuery: IActivity | Query<IActivity>): Promise<boolean | Query<IActivity>> {
         return AuthorizationUtils.authorizeReadForRoleAtLeast(user, UserRole.USER, originalDocumentOrQuery);
     }
 
-    protected authorizeCreate(user: User, updatedDocument: IActivity): boolean {
+    protected async authorizeCreate(user: User, updatedDocument: IActivity): Promise<boolean> {
         return user.role >= UserRole.SUBADMIN;
     }
 
-    protected authorizeUpdate(user: User, originalDocument: IActivity, updatedDocument: IActivity): boolean {
+    protected async authorizeUpdate(user: User, originalDocument: IActivity, updatedDocument: IActivity): Promise<boolean> {
         return user.role >= UserRole.SUBADMIN;
     }
 

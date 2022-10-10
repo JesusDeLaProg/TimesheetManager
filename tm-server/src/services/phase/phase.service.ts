@@ -13,17 +13,17 @@ export class PhaseService extends CrudService<IPhase> {
         super(root.collection('phase') as CollectionReference<IPhase>, Phase)
     }
 
-    protected authorizeRead(user: User, originalDocumentOrQuery: IPhase): boolean;
-    protected authorizeRead(user: User, originalDocumentOrQuery: Query<IPhase>): Query<IPhase>;
-    protected authorizeRead(user: User, originalDocumentOrQuery: IPhase | Query<IPhase>): boolean | Query<IPhase> {
+    protected async authorizeRead(user: User, originalDocumentOrQuery: IPhase): Promise<boolean>;
+    protected async authorizeRead(user: User, originalDocumentOrQuery: Query<IPhase>): Promise<Query<IPhase>>;
+    protected async authorizeRead(user: User, originalDocumentOrQuery: IPhase | Query<IPhase>): Promise<boolean | Query<IPhase>> {
         return AuthorizationUtils.authorizeReadForRoleAtLeast(user, UserRole.USER, originalDocumentOrQuery);
     }
 
-    protected authorizeCreate(user: User, updatedDocument: IPhase): boolean {
+    protected async authorizeCreate(user: User, updatedDocument: IPhase): Promise<boolean> {
         return user.role >= UserRole.SUBADMIN;
     }
 
-    protected authorizeUpdate(user: User, originalDocument: IPhase, updatedDocument: IPhase): boolean {
+    protected async authorizeUpdate(user: User, originalDocument: IPhase, updatedDocument: IPhase): Promise<boolean> {
         return user.role >= UserRole.SUBADMIN;
     }
 }
