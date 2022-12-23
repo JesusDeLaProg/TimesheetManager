@@ -1,4 +1,8 @@
-import { CollectionReference, DocumentReference, Firestore } from '@google-cloud/firestore';
+import {
+  CollectionReference,
+  DocumentReference,
+  Firestore,
+} from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IActivity } from '@tm/types/models/datamodels';
 import { ActivityService } from './activity.service';

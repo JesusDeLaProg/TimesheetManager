@@ -30,7 +30,11 @@ export class ProjectService extends CrudService<IProject> {
     user: User,
     originalDocumentOrQuery: IProject | Query<IProject>,
   ): Promise<boolean | Query<IProject>> {
-    return AuthorizationUtils.authorizeReadForRoleAtLeast(user, UserRole.USER, originalDocumentOrQuery);
+    return AuthorizationUtils.authorizeReadForRoleAtLeast(
+      user,
+      UserRole.USER,
+      originalDocumentOrQuery,
+    );
   }
 
   protected async authorizeCreate(

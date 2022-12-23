@@ -1,4 +1,8 @@
-import { Firestore, DocumentReference, CollectionReference } from '@google-cloud/firestore';
+import {
+  Firestore,
+  DocumentReference,
+  CollectionReference,
+} from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IPhase } from '@tm/types/models/datamodels';
 import { PhaseService } from './phase.service';
