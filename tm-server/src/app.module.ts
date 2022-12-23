@@ -9,6 +9,7 @@ import { ROOT_DOC } from '//config/constants';
 import { root } from '//config/db';
 import { ActivityService } from './services/activity/activity.service';
 import { PhaseService } from './services/phase/phase.service';
+import { TimesheetService } from './services/timesheet/timesheet.service';
 
 @Module({
   imports: [],
@@ -24,6 +25,7 @@ import { PhaseService } from './services/phase/phase.service';
     ProjectService,
     ActivityService,
     PhaseService,
+    TimesheetService,
   ],
 })
 export class AppModule {}
