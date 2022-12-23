@@ -17,15 +17,18 @@ export class UserService extends CrudService<IUser> {
     super(root.collection('user') as CollectionReference<IUser>, User);
   }
 
-  protected authorizeRead(user: User, originalDocumentOrQuery: IUser): boolean;
-  protected authorizeRead(
+  protected async authorizeRead(
+    user: User,
+    originalDocumentOrQuery: IUser,
+  ): Promise<boolean>;
+  protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<IUser>,
-  ): Query<IUser>;
-  protected authorizeRead(
+  ): Promise<Query<IUser>>;
+  protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: IUser | Query<IUser>,
-  ): boolean | Query<IUser> {
+  ): Promise<boolean | Query<IUser>> {
     if (originalDocumentOrQuery instanceof Query) {
       switch (user.role) {
         case UserRole.USER:
@@ -51,7 +54,10 @@ export class UserService extends CrudService<IUser> {
     }
   }
 
-  protected authorizeCreate(user: User, updatedDocument: IUser): boolean {
+  protected async authorizeCreate(
+    user: User,
+    updatedDocument: IUser,
+  ): Promise<boolean> {
     switch (user.role) {
       case UserRole.USER:
         return false;
@@ -64,11 +70,11 @@ export class UserService extends CrudService<IUser> {
     }
   }
 
-  protected authorizeUpdate(
+  protected async authorizeUpdate(
     user: User,
     originalDocument: IUser,
     updatedDocument: IUser,
-  ): boolean {
+  ): Promise<boolean> {
     switch (user.role) {
       case UserRole.USER:
         return false;

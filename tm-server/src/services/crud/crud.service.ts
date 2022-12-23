@@ -50,12 +50,15 @@ export class CrudService<T extends { _id?: StringId }> {
     }
   }
 
-  protected async authorizeRead(user: User, originalDocumentOrQuery: T): Promise<boolean>;
+  protected async authorizeRead(
+    user: User,
+    originalDocumentOrQuery: T,
+  ): Promise<boolean>;
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<T>,
   ): Promise<Query<T> | null>;
-  protected  async authorizeRead(
+  protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: T | Query<T>,
   ): Promise<boolean | Query<T> | null> {
@@ -66,7 +69,10 @@ export class CrudService<T extends { _id?: StringId }> {
     }
   }
 
-  protected async authorizeCreate(user: User, updatedDocument: T): Promise<boolean> {
+  protected async authorizeCreate(
+    user: User,
+    updatedDocument: T,
+  ): Promise<boolean> {
     return false;
   }
 
@@ -77,7 +83,10 @@ export class CrudService<T extends { _id?: StringId }> {
   ): Promise<boolean> {
     return false;
   }
-  protected async authorizeDelete(user: User, originalDocument: T): Promise<boolean> {
+  protected async authorizeDelete(
+    user: User,
+    originalDocument: T,
+  ): Promise<boolean> {
     return false;
   }
 
@@ -100,7 +109,7 @@ export class CrudService<T extends { _id?: StringId }> {
 
   async getById(user: User, id: string): Promise<T | null> {
     const result = (await this.collection.doc(id).get()).data();
-    if (this.authorizeRead(user, result)) {
+    if (await this.authorizeRead(user, result)) {
       return result || null;
     }
     throw new Status(403, `Lecture refusée sur document ${id}`);
@@ -153,7 +162,10 @@ export class CrudService<T extends { _id?: StringId }> {
     return errors;
   }
 
-  protected async prepareForSaving(object: T, forCreation: boolean): Promise<T> {
+  protected async prepareForSaving(
+    object: T,
+    forCreation: boolean,
+  ): Promise<T> {
     return object;
   }
 
@@ -166,7 +178,7 @@ export class CrudService<T extends { _id?: StringId }> {
     if (!validationResult.__success) {
       return validationResult;
     } else {
-      if (this.authorizeCreate(user, newDocument)) {
+      if (await this.authorizeCreate(user, newDocument)) {
         newDocument = await this.prepareForSaving(newDocument, true);
         return Object.assign(
           { __success: true as true },
@@ -192,7 +204,7 @@ export class CrudService<T extends { _id?: StringId }> {
     } else {
       const originalDocument = await this.getById(user, id);
       let updatedDocument = plainToInstance(this.objectClass, object);
-      if (this.authorizeUpdate(user, originalDocument, updatedDocument)) {
+      if (await this.authorizeUpdate(user, originalDocument, updatedDocument)) {
         updatedDocument = await this.prepareForSaving(updatedDocument, false);
         const docRef = this.collection.doc(id);
         await docRef.set(updatedDocument);
@@ -208,7 +220,7 @@ export class CrudService<T extends { _id?: StringId }> {
 
   async delete(user: User, id: string): Promise<boolean> {
     const originalDocument = await this.getById(user, id);
-    if (this.authorizeDelete(user, originalDocument)) {
+    if (await this.authorizeDelete(user, originalDocument)) {
       await this.collection.doc(id).delete();
       return true;
     }

@@ -23,32 +23,41 @@ class Data {
 }
 
 class AllAuthorizedCrudService<T> extends CrudService<T> {
-  protected authorizeCreate(user: IUser, updatedDocument: T): boolean {
+  protected async authorizeCreate(
+    user: IUser,
+    updatedDocument: T,
+  ): Promise<boolean> {
     return true;
   }
-  protected authorizeDelete(user: IUser, originalDocument: T): boolean {
+  protected async authorizeDelete(
+    user: IUser,
+    originalDocument: T,
+  ): Promise<boolean> {
     return true;
   }
-  protected authorizeRead(user: IUser, originalDocumentOrQuery: T): boolean;
-  protected authorizeRead(
+  protected async authorizeRead(
+    user: IUser,
+    originalDocumentOrQuery: T,
+  ): Promise<boolean>;
+  protected async authorizeRead(
     user: IUser,
     originalDocumentOrQuery: Query<T>,
-  ): Query<T>;
-  protected authorizeRead(
+  ): Promise<Query<T>>;
+  protected async authorizeRead(
     user: IUser,
     originalDocumentOrQuery: T | Query<T>,
-  ): boolean | Query<T> {
+  ): Promise<boolean | Query<T>> {
     if (originalDocumentOrQuery instanceof Query) {
       return originalDocumentOrQuery;
     } else {
       return true;
     }
   }
-  protected authorizeUpdate(
+  protected async authorizeUpdate(
     user: IUser,
     originalDocument: T,
     updatedDocument: T,
-  ): boolean {
+  ): Promise<boolean> {
     return true;
   }
 }
