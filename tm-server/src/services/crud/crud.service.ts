@@ -15,11 +15,9 @@ import { validate, ValidationError } from 'class-validator';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { Status } from '//types/status';
+import { ObjectValidator, ValidationResult } from '//types/validator';
 
-type ValidationResult<T> = { [key in keyof T]?: string[] } & {
-  __success: boolean;
-};
-type MutationResult<T> = T & { __success: true };
+export type MutationResult<T> = ValidationResult<T>;
 export class CrudService<T extends { _id?: StringId }> {
   private documentConverter: FirestoreDataConverter<T>;
   protected collection: CollectionReference<T>;
@@ -27,6 +25,7 @@ export class CrudService<T extends { _id?: StringId }> {
   constructor(
     collection: CollectionReference<T>,
     private objectClass: ClassConstructor<T>,
+    private objectValidator: ObjectValidator<T>
   ) {
     this.documentConverter = {
       toFirestore(classObj: T): DocumentData {
@@ -137,29 +136,18 @@ export class CrudService<T extends { _id?: StringId }> {
     return (await prefilteredQuery.select().get()).size;
   }
 
-  protected async internalValidate(
-    object: T,
-    forCreation: boolean,
-  ): Promise<ValidationError[]> {
-    return [];
-  }
-
   async validate(
     object: any,
-    forCreation: boolean,
+    forCreation?: boolean,
   ): Promise<ValidationResult<T>> {
-    let objectToValidate = object;
-    if (!(object instanceof this.objectClass)) {
-      objectToValidate = plainToInstance(this.objectClass, object);
+    if (forCreation === undefined) {
+      forCreation = !object._id;
     }
-    const errors = {} as ValidationResult<T>;
-    this.addErrors(await validate(objectToValidate), errors);
-    this.addErrors(
-      await this.internalValidate(objectToValidate, forCreation),
-      errors,
-    );
-    errors.__success = Object.entries(errors).length === 0;
-    return errors;
+    if (forCreation) {
+      return this.objectValidator.validateForCreate(object);
+    } else {
+      return this.objectValidator.validateForUpdate(object);
+    }
   }
 
   protected async prepareForSaving(
@@ -172,7 +160,7 @@ export class CrudService<T extends { _id?: StringId }> {
   async create(
     user: User,
     object: any,
-  ): Promise<ValidationResult<T> | MutationResult<T>> {
+  ): Promise<MutationResult<T>> {
     let newDocument = plainToInstance(this.objectClass, object);
     const validationResult = await this.validate(newDocument, true);
     if (!validationResult.__success) {
