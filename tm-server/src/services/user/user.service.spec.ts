@@ -1,9 +1,11 @@
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IUser, UserRole } from '@tm/types/models/datamodels';
+import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
 import { ROOT_DOC } from '//config/constants';
+import { ValidationResult } from '//types/validator';
+import { User } from '//dtos/user';
 
 describe('UserService', () => {
   let db: Firestore;
@@ -40,7 +42,10 @@ describe('UserService', () => {
       password: 'admin',
       firstName: 'admin',
       lastName: 'admin',
-      billingGroups: [],
+      billingGroups: [
+        { projectType: ProjectType.PRIVE, timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }] },
+        { projectType: ProjectType.PUBLIC, timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }] }
+      ],
       email: 'admin@tm.net',
       role: UserRole.ADMIN,
       isActive: true,
@@ -49,12 +54,15 @@ describe('UserService', () => {
     expect(creationResult).toEqual(
       expect.objectContaining({ username: 'admin', __success: true }),
     );
-    expect(await service.create(testUser, creationRequest)).toEqual({
-      username: ["Le nom d'utilisateur doit être unique."],
-      firstName: ['Le nom complet doit être unique.'],
-      lastName: ['Le nom complet doit être unique.'],
-      email: ['Le courriel doit être unique.'],
-      __success: false,
-    });
+    const duplicateCreateResult = await service.create(testUser, creationRequest);
+    expect(duplicateCreateResult.__success).toBe(false);
+    if (duplicateCreateResult.__success === false) {
+      expect(duplicateCreateResult.errors).toEqual(expect.arrayContaining([
+        expect.objectContaining({ property: 'username', constraints: { isUnique: "Le nom d'utilisateur doit être unique." } }),
+        expect.objectContaining({ property: 'firstName', constraints: { isUnique: 'Le nom complet doit être unique.' } }),
+        expect.objectContaining({ property: 'lastName', constraints: { isUnique: 'Le nom complet doit être unique.' } }),
+        expect.objectContaining({ property: 'email', constraints: { isUnique: 'Le courriel doit être unique.' } }),
+      ]))
+    }
   });
 });

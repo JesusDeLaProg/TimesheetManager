@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ITimesheet, IUser, UserRole } from '@tm/types/models/datamodels';
 import { CrudService } from '../crud/crud.service';
 import { ROOT_DOC } from '//config/constants';
-import { Timesheet } from '//dtos/timesheet';
+import { Timesheet, TimesheetValidator } from '//dtos/timesheet';
 import { User } from '//dtos/user';
 
 @Injectable()
@@ -18,6 +18,7 @@ export class TimesheetService extends CrudService<ITimesheet> {
     super(
       root.collection('timesheet') as CollectionReference<ITimesheet>,
       Timesheet,
+      TimesheetValidator,
     );
     this.Users = root.collection('user') as CollectionReference<IUser>;
   }
@@ -29,11 +30,11 @@ export class TimesheetService extends CrudService<ITimesheet> {
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<ITimesheet>,
-  ): Promise<Query<ITimesheet>>;
+  ): Promise<Query<ITimesheet> | null>;
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: ITimesheet | Query<ITimesheet>,
-  ): Promise<boolean | Query<ITimesheet>> {
+  ): Promise<boolean | Query<ITimesheet> | null> {
     if (originalDocumentOrQuery instanceof Query) {
       if (user.role > UserRole.USER) {
         return originalDocumentOrQuery;
@@ -41,7 +42,7 @@ export class TimesheetService extends CrudService<ITimesheet> {
         return originalDocumentOrQuery.where('user', '==', user._id);
       }
     } else {
-      return (
+      return !!originalDocumentOrQuery && (
         user.role > UserRole.USER || originalDocumentOrQuery.user === user._id
       );
     }

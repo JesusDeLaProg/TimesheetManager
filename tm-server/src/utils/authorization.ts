@@ -12,12 +12,12 @@ export class AuthorizationUtils {
     user: User,
     minimumRole: UserRole,
     originalDocumentOrQuery: Query<T>,
-  ): Query<T>;
+  ): Query<T> | null;
   static authorizeReadForRoleAtLeast<T>(
     user: User,
     minimumRole: UserRole,
     originalDocumentOrQuery: T | Query<T>,
-  ): boolean | Query<T> {
+  ): boolean | Query<T> | null {
     if (originalDocumentOrQuery instanceof Query) {
       if (user.role >= minimumRole) {
         return originalDocumentOrQuery;
@@ -25,6 +25,6 @@ export class AuthorizationUtils {
         return null;
       }
     }
-    return user.role >= minimumRole;
+    return !!originalDocumentOrQuery && user.role >= minimumRole;
   }
 }

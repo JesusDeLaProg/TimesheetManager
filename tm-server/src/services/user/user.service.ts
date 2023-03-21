@@ -5,16 +5,18 @@ import {
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
-import { ValidationError } from 'class-validator';
 import { CrudService } from '//services/crud/crud.service';
 import { ROOT_DOC } from '//config/constants';
-import { User } from '//dtos/user';
-import { ValidationUtils } from '//utils/validation';
+import { User, UserValidator } from '//dtos/user';
 
 @Injectable()
 export class UserService extends CrudService<IUser> {
   constructor(@Inject(ROOT_DOC) root: DocumentReference) {
-    super(root.collection('user') as CollectionReference<IUser>, User);
+    super(
+      root.collection('user') as CollectionReference<IUser>,
+      User,
+      UserValidator,
+    );
   }
 
   protected async authorizeRead(
@@ -24,11 +26,11 @@ export class UserService extends CrudService<IUser> {
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<IUser>,
-  ): Promise<Query<IUser>>;
+  ): Promise<Query<IUser> | null>;
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: IUser | Query<IUser>,
-  ): Promise<boolean | Query<IUser>> {
+  ): Promise<boolean | Query<IUser> | null> {
     if (originalDocumentOrQuery instanceof Query) {
       switch (user.role) {
         case UserRole.USER:
@@ -43,11 +45,11 @@ export class UserService extends CrudService<IUser> {
     } else {
       switch (user.role) {
         case UserRole.USER:
-          return originalDocumentOrQuery._id === user._id;
+          return !!originalDocumentOrQuery && originalDocumentOrQuery._id === user._id;
         case UserRole.SUBADMIN:
         case UserRole.ADMIN:
         case UserRole.SUPERADMIN:
-          return true;
+          return !!originalDocumentOrQuery;
         default:
           return false;
       }
@@ -88,33 +90,5 @@ export class UserService extends CrudService<IUser> {
       default:
         return false;
     }
-  }
-
-  protected async internalValidate(
-    user: IUser,
-    forCreation: boolean,
-  ): Promise<ValidationError[]> {
-    const errors = await ValidationUtils.validateUnique(this.collection, user, [
-      {
-        fields: ['username'],
-        errorMessage: "Le nom d'utilisateur doit être unique.",
-      },
-      { fields: ['email'], errorMessage: 'Le courriel doit être unique.' },
-      {
-        fields: ['firstName', 'lastName'],
-        errorMessage: 'Le nom complet doit être unique.',
-      },
-    ]);
-    if (forCreation) {
-      if (!user.password) {
-        errors.push({
-          target: user,
-          property: 'password',
-          value: user.password,
-          constraints: { notEmpty: 'Vous devez choisir un mot de passe.' },
-        });
-      }
-    }
-    return errors;
   }
 }

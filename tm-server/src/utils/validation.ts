@@ -1,7 +1,7 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { StringId } from '@tm/types/models/datamodels';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
-import { ValidationError } from 'class-validator';
+import { validate, ValidationError } from 'class-validator';
 import { ObjectValidator, ValidationResult } from '../types/validator';
 
 export interface UniquenessValidationOptions<T> {
@@ -9,34 +9,44 @@ export interface UniquenessValidationOptions<T> {
   errorMessage: string;
 }
 
-export class BaseObjectValidator<T extends { _id?: StringId }> implements ObjectValidator<T> {
+export class BaseObjectValidator<T extends { _id?: StringId }>
+  implements ObjectValidator<T>
+{
+  protected VALIDATORS: ((obj: T) => Promise<ValidationError[]>)[] = [(obj: T) => validate(obj)];
 
-  constructor(protected collection: CollectionReference<T>, protected objectClass: ClassConstructor<T>) {}
+  constructor(
+    protected collection: CollectionReference<T>,
+    protected objectClass: ClassConstructor<T>,
+  ) {}
 
   protected convertToTypedObject(object: unknown): T {
     if (object instanceof this.objectClass) {
+      this.normalize(object);
       return object;
     }
-    return plainToInstance(this.objectClass, object);
+    const obj = plainToInstance(this.objectClass, object);
+    this.normalize(obj);
+    return obj;
   }
 
-  protected convertErrorsToValidationResult(object: T, errors: ValidationError[]): ValidationResult<T> {
+  protected convertErrorsToValidationResult(
+    object: T,
+    errors: ValidationError[],
+  ): ValidationResult<T> {
     if (errors.length === 0) {
-      return Object.assign(object, { __success: true });
+      return Object.assign(object, { __success: true as const });
     } else {
-      const validationResult: ValidationResult<T> = { __success: false };
-      for (const error of errors) {
-        if (validationResult[error.property] === undefined) {
-          validationResult[error.property] = [];
-        }
-        validationResult[error.property].push(...Object.values(error.constraints));
-      }
+      return { __success: false, errors };
     }
   }
 
-  protected async combineValidators(object: T, failfast: boolean, ...validators: ((object: T) => Promise<ValidationError[]>)[]) {
-    const errors = [];
-    for(const validator of validators) {
+  protected async combineValidators(
+    object: T,
+    failfast: boolean,
+    ...validators: ((object: T) => Promise<ValidationError[]>)[]
+  ) {
+    const errors: ValidationError[] = [];
+    for (const validator of validators) {
       if (errors.length > 0 && failfast) {
         break;
       } else {
@@ -64,7 +74,7 @@ export class BaseObjectValidator<T extends { _id?: StringId }> implements Object
             property: field as string,
             value: object[field],
             constraints: {
-              unique: option.errorMessage,
+              isUnique: option.errorMessage,
             },
           });
         }
@@ -73,10 +83,15 @@ export class BaseObjectValidator<T extends { _id?: StringId }> implements Object
     return errors;
   }
 
-  validateForCreate(object: unknown): Promise<ValidationResult<T>> {
-    throw new Error('Method not implemented.');
+  protected normalize(object: T) {
+    return undefined;
   }
-  validateForUpdate(object: unknown): Promise<ValidationResult<T>> {
-    throw new Error('Method not implemented.');
+
+  validate(object: unknown): Promise<ValidationResult<T>> {
+    return this.combineValidators(
+      this.convertToTypedObject(object),
+      true,
+      ...this.VALIDATORS,
+    );
   }
 }

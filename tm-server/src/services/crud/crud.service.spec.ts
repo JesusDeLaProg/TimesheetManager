@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Query } from '@google-cloud/firestore';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, ValidationError } from 'class-validator';
 import {
   initFirestore,
   closeFirestore,
@@ -7,6 +7,7 @@ import {
 } from '//test/test-base';
 import { CrudService } from './crud.service';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
+import { BaseObjectValidator } from '//utils/validation';
 
 class Data {
   @IsString({})
@@ -20,6 +21,12 @@ class Data {
     },
   )
   data: number;
+}
+
+class DataValidator extends BaseObjectValidator<Data> {
+  constructor(datas: CollectionReference<Data>) {
+    super(datas, Data);
+  }
 }
 
 class AllAuthorizedCrudService<T> extends CrudService<T> {
@@ -90,7 +97,11 @@ describe('CrudService', () => {
   });
 
   beforeEach(async () => {
-    service = new AllAuthorizedCrudService<Data>(collection, Data);
+    service = new AllAuthorizedCrudService<Data>(
+      collection,
+      Data,
+      DataValidator,
+    );
   });
   afterEach(async () => {
     await db.recursiveDelete(collection);
@@ -162,16 +173,19 @@ describe('CrudService', () => {
     });
   });
 
-  it('validate(valid) should return empty array', async () => {
-    expect(await service.validate({ data: 1 }, true)).toEqual({
+  it('validate(valid) should return input object', async () => {
+    expect(await service.validate({ data: 1 })).toEqual({
+      data: 1,
       __success: true,
     });
   });
 
   it('validate(invalid) should return validation errors', async () => {
-    expect(await service.validate({ data: 'test' }, true)).toEqual({
-      data: ['data doit être un nombre. data: test'],
+    expect(await service.validate({ data: 'test' })).toMatchObject({
       __success: false,
+      errors: [
+        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
+      ]
     });
   });
 
@@ -184,9 +198,11 @@ describe('CrudService', () => {
   });
 
   it('create(invalid) should return validation errors', async () => {
-    expect(await service.create(dummyUser, { data: 'test' })).toEqual({
-      data: ['data doit être un nombre. data: test'],
+    expect(await service.create(dummyUser, { data: 'test' })).toMatchObject({
       __success: false,
+      errors: [
+        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
+      ]
     });
   });
 
@@ -203,9 +219,11 @@ describe('CrudService', () => {
     const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
     expect(
       await service.update(dummyUser, docs[0].id, { data: 'test' }),
-    ).toEqual({
-      data: ['data doit être un nombre. data: test'],
+    ).toMatchObject({
       __success: false,
+      errors: [
+        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
+      ]
     });
   });
 

@@ -11,21 +11,26 @@ import {
   instanceToPlain,
   plainToInstance,
 } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
+import { ValidationError } from 'class-validator';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { Status } from '//types/status';
-import { ObjectValidator, ValidationResult } from '//types/validator';
+import {
+  ObjectValidator,
+  ObjectValidatorConstructor,
+  ValidationResult,
+} from '//types/validator';
 
 export type MutationResult<T> = ValidationResult<T>;
 export class CrudService<T extends { _id?: StringId }> {
   private documentConverter: FirestoreDataConverter<T>;
+  private objectValidator: ObjectValidator<T>;
   protected collection: CollectionReference<T>;
 
   constructor(
     collection: CollectionReference<T>,
     private objectClass: ClassConstructor<T>,
-    private objectValidator: ObjectValidator<T>
+    ObjectValidatorClass: ObjectValidatorConstructor<T>,
   ) {
     this.documentConverter = {
       toFirestore(classObj: T): DocumentData {
@@ -38,6 +43,10 @@ export class CrudService<T extends { _id?: StringId }> {
       },
     };
     this.collection = collection.withConverter(this.documentConverter);
+    this.objectValidator = new ObjectValidatorClass(
+      this.collection,
+      objectClass,
+    );
   }
 
   private addErrors(from: ValidationError[], to: ValidationResult<T>) {
@@ -136,41 +145,23 @@ export class CrudService<T extends { _id?: StringId }> {
     return (await prefilteredQuery.select().get()).size;
   }
 
-  async validate(
-    object: any,
-    forCreation?: boolean,
-  ): Promise<ValidationResult<T>> {
-    if (forCreation === undefined) {
-      forCreation = !object._id;
-    }
-    if (forCreation) {
-      return this.objectValidator.validateForCreate(object);
-    } else {
-      return this.objectValidator.validateForUpdate(object);
-    }
+  async validate(object: any): Promise<ValidationResult<T>> {
+    return this.objectValidator.validate(object);
   }
 
-  protected async prepareForSaving(
-    object: T,
-    forCreation: boolean,
-  ): Promise<T> {
-    return object;
-  }
-
-  async create(
-    user: User,
-    object: any,
-  ): Promise<MutationResult<T>> {
-    let newDocument = plainToInstance(this.objectClass, object);
-    const validationResult = await this.validate(newDocument, true);
+  async create(user: User, object: any): Promise<MutationResult<T>> {
+    delete object._id;
+    const validationResult = await this.validate(object);
     if (!validationResult.__success) {
       return validationResult;
     } else {
-      if (await this.authorizeCreate(user, newDocument)) {
-        newDocument = await this.prepareForSaving(newDocument, true);
+      delete validationResult.__success;
+      if (await this.authorizeCreate(user, object)) {
         return Object.assign(
-          { __success: true as true },
-          (await (await this.collection.add(newDocument)).get()).data(),
+          { __success: true as const },
+          (
+            await (await this.collection.add(validationResult as T)).get()
+          ).data(),
         );
       } else {
         throw new Status(
@@ -186,18 +177,17 @@ export class CrudService<T extends { _id?: StringId }> {
     id: string,
     object: any,
   ): Promise<ValidationResult<T> | MutationResult<T>> {
-    const validationResult = await this.validate(object, false);
+    const validationResult = await this.validate(object);
     if (!validationResult.__success) {
       return validationResult;
     } else {
       const originalDocument = await this.getById(user, id);
-      let updatedDocument = plainToInstance(this.objectClass, object);
+      const updatedDocument = plainToInstance(this.objectClass, object);
       if (await this.authorizeUpdate(user, originalDocument, updatedDocument)) {
-        updatedDocument = await this.prepareForSaving(updatedDocument, false);
         const docRef = this.collection.doc(id);
         await docRef.set(updatedDocument);
         return Object.assign(
-          { __success: true as true },
+          { __success: true as const },
           (await docRef.get()).data(),
         );
       } else {

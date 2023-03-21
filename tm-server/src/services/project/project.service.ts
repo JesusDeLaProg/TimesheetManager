@@ -6,7 +6,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { IProject, UserRole } from '@tm/types/models/datamodels';
 import { ROOT_DOC } from '//config/constants';
-import { Project } from '//dtos/project';
+import { Project, ProjectValidator } from '//dtos/project';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { CrudService } from '//services/crud/crud.service';
@@ -15,7 +15,11 @@ import { AuthorizationUtils } from '//utils/authorization';
 @Injectable()
 export class ProjectService extends CrudService<IProject> {
   constructor(@Inject(ROOT_DOC) root: DocumentReference) {
-    super(root.collection('project') as CollectionReference<IProject>, Project);
+    super(
+      root.collection('project') as CollectionReference<IProject>,
+      Project,
+      ProjectValidator,
+    );
   }
 
   protected async authorizeRead(
@@ -25,11 +29,11 @@ export class ProjectService extends CrudService<IProject> {
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: Query<IProject>,
-  ): Promise<Query<IProject>>;
+  ): Promise<Query<IProject> | null>;
   protected async authorizeRead(
     user: User,
     originalDocumentOrQuery: IProject | Query<IProject>,
-  ): Promise<boolean | Query<IProject>> {
+  ): Promise<boolean | Query<IProject> | null> {
     return AuthorizationUtils.authorizeReadForRoleAtLeast(
       user,
       UserRole.USER,
