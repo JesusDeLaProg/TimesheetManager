@@ -1,6 +1,8 @@
+import 'reflect-metadata';
 import { CollectionReference, Firestore } from '@google-cloud/firestore';
 import { UserRole } from '@tm/types/models/datamodels';
 import { User } from '//dtos/user';
+import { v4 as uuidv4 } from 'uuid';
 
 export const testUser: User = {
   _id: 'abcd',
@@ -27,13 +29,14 @@ export function addDocumentsToCollection(
   );
 }
 
-export function initFirestore() {
+export async function initFirestore() {
   const db = new Firestore({
     projectId: 'timesheet-manager-v2',
     ignoreUndefinedProperties: true,
   });
-  const root = db.collection('timesheet-manager').doc('test');
-  db.recursiveDelete(root);
+  const uuid = uuidv4();
+  const root = db.collection('timesheet-manager').doc(`test_${uuid}`);
+  await db.recursiveDelete(root);
   return { db, root };
 }
 

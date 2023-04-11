@@ -1,5 +1,5 @@
 import { CollectionReference } from '@google-cloud/firestore';
-import { IProject, ProjectType } from '@tm/types/models/datamodels';
+import { IProject, ProjectType, StringId } from '@tm/types/models/datamodels';
 import {
   IsBoolean,
   IsEnum,
@@ -9,28 +9,30 @@ import {
   Matches,
 } from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
+import * as ValidationMessages from '//i18n/validation.json';
 
 export class Project implements IProject {
-  @IsString()
+  @IsString({ message: ValidationMessages.IsString })
   @IsOptional()
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
   _id?: string;
 
-  @IsString()
-  @Matches(/[0-9]{2}-[0-9]{1,3}/)
+  @IsString({ message: ValidationMessages.IsString })
+  @Matches(/[0-9]{2}-[0-9]{1,3}/, { message: ValidationMessages.Matches })
   code: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
   name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  client: string;
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
+  client: StringId;
 
-  @IsEnum(ProjectType)
+  @IsEnum(ProjectType, { message: ValidationMessages.IsEnum })
   type: ProjectType;
 
-  @IsBoolean()
+  @IsBoolean({ message: ValidationMessages.IsBoolean })
   isActive: boolean;
 }
 

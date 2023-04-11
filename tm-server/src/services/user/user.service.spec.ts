@@ -4,8 +4,6 @@ import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
 import { ROOT_DOC } from '//config/constants';
-import { ValidationResult } from '//types/validator';
-import { User } from '//dtos/user';
 
 describe('UserService', () => {
   let db: Firestore;
@@ -13,7 +11,7 @@ describe('UserService', () => {
   let service: UserService;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
   });
 
   afterAll(async () => {

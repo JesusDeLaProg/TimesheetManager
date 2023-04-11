@@ -43,7 +43,7 @@ describe('TimesheetService', () => {
   let Users: CollectionReference<IUser>;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
     Timesheets = root.collection(
       'timesheet',
     ) as CollectionReference<ITimesheet>;
@@ -99,13 +99,9 @@ describe('TimesheetService', () => {
       ] }],
       roadsheetLines: [],
     };
-    expect(service.create(subadminUser, newTimesheet)).rejects.toEqual(
-      expect.objectContaining<Status>(
-        new Status(
-          403,
-          'Création refusée sur ressource timesheet-manager/test/timesheet',
-        ),
-      ),
-    );
+    expect(service.create(subadminUser, newTimesheet)).rejects.toEqual({
+      code: 403,
+      message: expect.stringMatching(/Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/)
+    });
   });
 });

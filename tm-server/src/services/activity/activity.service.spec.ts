@@ -16,7 +16,7 @@ describe('ActivityService', () => {
   let collection: CollectionReference<IActivity>;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
     collection = root.collection('activity') as CollectionReference<IActivity>;
   });
 

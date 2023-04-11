@@ -1,12 +1,23 @@
-import { CollectionReference, Query } from '@google-cloud/firestore';
+import { CollectionReference, Query, Timestamp } from '@google-cloud/firestore';
 import { StringId } from '@tm/types/models/datamodels';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { ObjectValidator, ValidationResult } from '../types/validator';
+import { DateTime } from 'luxon';
 
 export interface UniquenessValidationOptions<T> {
   fields: (keyof T)[];
   errorMessage: string;
+}
+
+export function normalizeDate(value: Date | Timestamp, timeOfDay?: 'startOf' | 'endOf') {
+  if (value instanceof Timestamp) {
+    value = value.toDate();
+  }
+  if (!value || value.valueOf() === 0) {
+    return value;
+  }
+  return timeOfDay ? DateTime.fromJSDate(value)[timeOfDay]('day').toJSDate() : value;
 }
 
 export class BaseObjectValidator<T extends { _id?: StringId }>
@@ -21,11 +32,11 @@ export class BaseObjectValidator<T extends { _id?: StringId }>
 
   protected convertToTypedObject(object: unknown): T {
     if (object instanceof this.objectClass) {
-      this.normalize(object);
+      // this.normalize(object);
       return object;
     }
     const obj = plainToInstance(this.objectClass, object);
-    this.normalize(obj);
+    // this.normalize(obj);
     return obj;
   }
 

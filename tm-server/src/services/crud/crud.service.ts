@@ -176,7 +176,7 @@ export class CrudService<T extends { _id?: StringId }> {
     user: User,
     id: string,
     object: any,
-  ): Promise<ValidationResult<T> | MutationResult<T>> {
+  ): Promise<MutationResult<T>> {
     const validationResult = await this.validate(object);
     if (!validationResult.__success) {
       return validationResult;

@@ -21,7 +21,7 @@ describe('ProjectService', () => {
   let collection: CollectionReference<IProject>;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
     collection = root.collection('project') as CollectionReference<IProject>;
   });
 

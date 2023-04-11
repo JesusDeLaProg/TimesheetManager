@@ -9,24 +9,28 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
+  ArrayUnique,
   IsArray,
   IsBoolean,
   IsDate,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
   MinLength,
   Validate,
+  ValidateIf,
   ValidateNested,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { DateTime, Interval } from 'luxon';
-import { BaseObjectValidator } from '//utils/validation';
+import { BaseObjectValidator, normalizeDate } from '//utils/validation';
+import * as ValidationMessages from '//i18n/validation.json';
 
 @ValidatorConstraint({ name: 'timelineCompleteness', async: false })
 class TimelineCompletenessValidator implements ValidatorConstraintInterface {
@@ -40,7 +44,7 @@ class TimelineCompletenessValidator implements ValidatorConstraintInterface {
         lastEndDate,
         DateTime.fromJSDate(value[i].begin),
       );
-      if (interval.length('hours') > 1 || interval.length('hours') < 0) {
+      if (!interval.isValid || interval.length('hours') > 1 || interval.length('hours') < 0) {
         return false;
       }
       lastEndDate = DateTime.fromJSDate(value[i].end);
@@ -48,7 +52,7 @@ class TimelineCompletenessValidator implements ValidatorConstraintInterface {
     return true;
   }
   defaultMessage?(args?: ValidationArguments): string {
-    return 'Les intervales doivent se suivre sans espaces.';
+    return 'Les intervales doivent se suivre sans espaces et sans chevauchements';
   }
 }
 
@@ -58,80 +62,82 @@ class TimelineBoundsValidator implements ValidatorConstraintInterface {
     return value[0].begin.valueOf() === 0 && !value.slice(-1)[0].end;
   }
   defaultMessage?(args?: ValidationArguments): string {
-    return 'Le premier intervale doit commencer le 1er Janvier 1970 et le dernier intervale doit être sans fin.';
+    return 'Le premier intervale doit commencer le 1er Janvier 1970 et le dernier intervale doit être sans fin';
   }
 }
 
 export class BillingRate {
-  @IsDate()
+  @IsDate({ message: ValidationMessages.IsDate })
   @Type(() => Date)
-  @Transform(({ value }) => value instanceof Timestamp ? value.toDate() : value)
+  @Transform(({ value }) => normalizeDate(value, 'startOf'), { toClassOnly: true })
   begin: Date;
 
-  @IsDate()
+  @IsDate({ message: ValidationMessages.IsDate })
   @IsOptional()
   @Type(() => Date)
-  @Transform(({ value }) => value && (value instanceof Timestamp ? value.toDate() : value))
+  @Transform(({ value }) => value && normalizeDate(value, 'endOf'), { toClassOnly: true })
   end?: Date;
 
-  @IsNumber()
-  @Min(0)
+  @IsNumber(undefined, { message: ValidationMessages.IsNumber })
+  @Min(0, { message: ValidationMessages.Min })
   rate: number;
 
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: ValidationMessages.IsString })
+  @MinLength(1, { message: ValidationMessages.MinLength })
   jobTitle: string;
 }
 
 export class BillingGroup {
-  @IsEnum(ProjectType)
+  @IsEnum(ProjectType, { message: ValidationMessages.IsEnum })
   projectType: ProjectType;
 
-  @IsArray()
+  @IsArray({ message: ValidationMessages.IsArray })
   @ValidateNested({ each: true })
   @Type(() => BillingRate)
-  @ArrayMinSize(1, { message: 'Il doit y avoir au moins 1 taux horaire.' })
+  @ArrayMinSize(1, { message: 'Il doit y avoir au moins 1 taux horaire' })
   @Validate(TimelineCompletenessValidator)
   @Validate(TimelineBoundsValidator)
   timeline: BillingRate[];
 }
 
 export class User implements IUser {
-  @IsString()
+  @IsString({ message: ValidationMessages.IsString })
   @IsOptional()
   _id?: StringId;
 
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
   username: string;
 
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
   firstName: string;
 
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
   lastName: string;
 
-  @IsEnum(UserRole)
+  @IsEnum(UserRole, { message: ValidationMessages.IsEnum })
   role: UserRole;
 
-  @IsString()
-  @IsEmail()
+  @IsString({ message: ValidationMessages.IsString })
+  @IsEmail(undefined, { message: ValidationMessages.IsEmail })
   email: string;
 
-  @IsString()
-  @IsOptional()
+  @IsString({ message: ValidationMessages.IsString })
+  @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
+  @ValidateIf(user => !user._id)
   password?: string;
 
-  @IsArray()
+  @IsArray({ message: ValidationMessages.IsArray })
   @ValidateNested({ each: true })
   @Type(() => BillingGroup)
-  @ArrayMinSize(2, { message: 'Il doit y avoir 2 groupes de facturations.' })
-  @ArrayMaxSize(2, { message: 'Il doit y avoir 2 groupes de facturations.' })
+  @ArrayMinSize(2, { message: 'Il doit y avoir 2 groupes de facturations' })
+  @ArrayMaxSize(2, { message: 'Il doit y avoir 2 groupes de facturations' })
+  @ArrayUnique((bg: BillingGroup) => bg.projectType, { message: 'Il doit y avoir une liste de taux pour chaque type de facturation' })
   billingGroups: BillingGroup[];
 
-  @IsBoolean()
+  @IsBoolean({ message: ValidationMessages.IsBoolean })
   isActive: boolean;
 }
 

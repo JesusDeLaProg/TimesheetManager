@@ -1,0 +1,19 @@
+{
+    "ArrayMaxSize": "$property doit contenir au maximum $constraint1 éléments",
+    "ArrayMinSize": "$property doit contenir au maximum $constraint1 éléments",
+    "ArraySize": "$property doit contenir exactement $constraint1 éléments",
+    "IsArray": "$property doit être une liste",
+    "IsBoolean": "$property doit être vrai ou faux",
+    "IsDate": "$property doit être une date",
+    "IsEmail": "$property doit être adresse courriel",
+    "IsEnum": "$property doit être une de ces valeurs: $constraint2",
+    "IsNotEmpty": "$property ne doit pas être vide",
+    "IsNumber": "$property doit être un nombre",
+    "IsObject": "$property doit être un objet",
+    "IsString": "$property doit être du texte",
+    "Min": "$property doit être supérieur ou égal à $constraint1",
+    "Max": "$property doit être inférieur ou égal à $constraint1",
+    "Matches": "$property doit respecter le format $constraint1",
+    "MinLength": "$property doit contenir au moins $constraint1 charactères",
+    "MaxLength": "$property doit contenir au maximum $constraint1 charactères"
+}

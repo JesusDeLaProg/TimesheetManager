@@ -16,7 +16,7 @@ describe('PhaseService', () => {
   let collection: CollectionReference<IPhase>;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
     collection = root.collection('phase') as CollectionReference<IPhase>;
   });
 

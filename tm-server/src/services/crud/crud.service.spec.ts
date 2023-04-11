@@ -88,7 +88,7 @@ describe('CrudService', () => {
   let collection: CollectionReference<Data>;
 
   beforeAll(async () => {
-    ({ db, root } = initFirestore());
+    ({ db, root } = await initFirestore());
     collection = root.collection('base') as CollectionReference<Data>;
   });
 
