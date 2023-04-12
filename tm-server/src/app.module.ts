@@ -11,6 +11,7 @@ import { ActivityService } from './services/activity/activity.service';
 import { PhaseService } from './services/phase/phase.service';
 import { TimesheetService } from './services/timesheet/timesheet.service';
 import { Settings } from 'luxon';
+import { AuthService } from './services/auth/auth.service';
 
 Settings.defaultLocale = 'fr-CA';
 Settings.defaultZone = 'America/New_York';
@@ -30,6 +31,7 @@ Settings.defaultZone = 'America/New_York';
     ActivityService,
     PhaseService,
     TimesheetService,
+    AuthService,
   ],
 })
 export class AppModule {}
