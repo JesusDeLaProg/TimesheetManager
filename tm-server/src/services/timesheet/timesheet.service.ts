@@ -42,8 +42,9 @@ export class TimesheetService extends CrudService<ITimesheet> {
         return originalDocumentOrQuery.where('user', '==', user._id);
       }
     } else {
-      return !!originalDocumentOrQuery && (
-        user.role > UserRole.USER || originalDocumentOrQuery.user === user._id
+      return (
+        !!originalDocumentOrQuery &&
+        (user.role > UserRole.USER || originalDocumentOrQuery.user === user._id)
       );
     }
   }

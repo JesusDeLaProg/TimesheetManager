@@ -10,20 +10,27 @@ export interface UniquenessValidationOptions<T> {
   errorMessage: string;
 }
 
-export function normalizeDate(value: Date | Timestamp, timeOfDay?: 'startOf' | 'endOf') {
+export function normalizeDate(
+  value: Date | Timestamp,
+  timeOfDay?: 'startOf' | 'endOf',
+) {
   if (value instanceof Timestamp) {
     value = value.toDate();
   }
   if (!value || value.valueOf() === 0) {
     return value;
   }
-  return timeOfDay ? DateTime.fromJSDate(value)[timeOfDay]('day').toJSDate() : value;
+  return timeOfDay
+    ? DateTime.fromJSDate(value)[timeOfDay]('day').toJSDate()
+    : value;
 }
 
 export class BaseObjectValidator<T extends { _id?: StringId }>
   implements ObjectValidator<T>
 {
-  protected VALIDATORS: ((obj: T) => Promise<ValidationError[]>)[] = [(obj: T) => validate(obj)];
+  protected VALIDATORS: ((obj: T) => Promise<ValidationError[]>)[] = [
+    (obj: T) => validate(obj),
+  ];
 
   constructor(
     protected collection: CollectionReference<T>,

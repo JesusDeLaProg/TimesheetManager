@@ -11,7 +11,6 @@ import {
   instanceToPlain,
   plainToInstance,
 } from 'class-transformer';
-import { ValidationError } from 'class-validator';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { Status } from '//types/status';
@@ -47,15 +46,6 @@ export class CrudService<T extends { _id?: StringId }> {
       this.collection,
       objectClass,
     );
-  }
-
-  private addErrors(from: ValidationError[], to: ValidationResult<T>) {
-    for (const error of from) {
-      if (to[error.property] === undefined) {
-        to[error.property] = [];
-      }
-      to[error.property].push(...Object.values(error.constraints));
-    }
   }
 
   protected async authorizeRead(

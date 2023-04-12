@@ -41,8 +41,14 @@ describe('UserService', () => {
       firstName: 'admin',
       lastName: 'admin',
       billingGroups: [
-        { projectType: ProjectType.PRIVE, timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }] },
-        { projectType: ProjectType.PUBLIC, timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }] }
+        {
+          projectType: ProjectType.PRIVE,
+          timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }],
+        },
+        {
+          projectType: ProjectType.PUBLIC,
+          timeline: [{ begin: new Date(0), jobTitle: 'Employee', rate: 1 }],
+        },
       ],
       email: 'admin@tm.net',
       role: UserRole.ADMIN,
@@ -52,15 +58,32 @@ describe('UserService', () => {
     expect(creationResult).toEqual(
       expect.objectContaining({ username: 'admin', __success: true }),
     );
-    const duplicateCreateResult = await service.create(testUser, creationRequest);
+    const duplicateCreateResult = await service.create(
+      testUser,
+      creationRequest,
+    );
     expect(duplicateCreateResult.__success).toBe(false);
     if (duplicateCreateResult.__success === false) {
-      expect(duplicateCreateResult.errors).toEqual(expect.arrayContaining([
-        expect.objectContaining({ property: 'username', constraints: { isUnique: "Le nom d'utilisateur doit être unique." } }),
-        expect.objectContaining({ property: 'firstName', constraints: { isUnique: 'Le nom complet doit être unique.' } }),
-        expect.objectContaining({ property: 'lastName', constraints: { isUnique: 'Le nom complet doit être unique.' } }),
-        expect.objectContaining({ property: 'email', constraints: { isUnique: 'Le courriel doit être unique.' } }),
-      ]))
+      expect(duplicateCreateResult.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            property: 'username',
+            constraints: { isUnique: "Le nom d'utilisateur doit être unique." },
+          }),
+          expect.objectContaining({
+            property: 'firstName',
+            constraints: { isUnique: 'Le nom complet doit être unique.' },
+          }),
+          expect.objectContaining({
+            property: 'lastName',
+            constraints: { isUnique: 'Le nom complet doit être unique.' },
+          }),
+          expect.objectContaining({
+            property: 'email',
+            constraints: { isUnique: 'Le courriel doit être unique.' },
+          }),
+        ]),
+      );
     }
   });
 });

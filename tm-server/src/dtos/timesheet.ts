@@ -78,7 +78,11 @@ class DateIsIntervalBound implements ValidatorConstraintInterface {
       return true;
     } else if (args.property === 'end') {
       for (const line of t.lines) {
-        if (!v.equals(DateTime.fromJSDate(line.entries.slice(-1)[0].date).endOf('day'))) {
+        if (
+          !v.equals(
+            DateTime.fromJSDate(line.entries.slice(-1)[0].date).endOf('day'),
+          )
+        ) {
           return false;
         }
       }
@@ -94,10 +98,15 @@ class DateIsIntervalBound implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'noUnknownProject', async: false })
 class NoUnknownProject implements ValidatorConstraintInterface {
   validate(value?: RoadsheetLine[], args?: ValidationArguments): boolean {
-    return value?.every(rl => !!(args.object as Timesheet)?.lines?.find(l => l?.project === rl?.project));
+    return value?.every(
+      (rl) =>
+        !!(args.object as Timesheet)?.lines?.find(
+          (l) => l?.project === rl?.project,
+        ),
+    );
   }
   defaultMessage(args?: ValidationArguments): string {
-    return 'Tous les projets sur la feuille de dépense doivent être sur la feuille de temps'
+    return 'Tous les projets sur la feuille de dépense doivent être sur la feuille de temps';
   }
 }
 
@@ -106,9 +115,13 @@ class NoDateOutsideBounds implements ValidatorConstraintInterface {
   validate(value?: RoadsheetLine[], args?: ValidationArguments): boolean {
     const interval = Interval.fromDateTimes(
       DateTime.fromJSDate((args.object as Timesheet).begin),
-      DateTime.fromJSDate((args.object as Timesheet).end)
-      );
-    return value?.every(line => line.travels?.every(t => interval.contains(DateTime.fromJSDate(t.date))));
+      DateTime.fromJSDate((args.object as Timesheet).end),
+    );
+    return value?.every((line) =>
+      line.travels?.every((t) =>
+        interval.contains(DateTime.fromJSDate(t.date)),
+      ),
+    );
   }
   defaultMessage(args?: ValidationArguments): string {
     return 'Toutes les dates doivent être entre le début et la fin de la feuille de temps';
@@ -127,7 +140,9 @@ export class Expense implements IExpense {
 
 export class Travel implements ITravel {
   @IsDate({ message: ValidationMessages.IsDate })
-  @Transform(({ value }) => normalizeDate(value, 'startOf'), { toClassOnly: true })
+  @Transform(({ value }) => normalizeDate(value, 'startOf'), {
+    toClassOnly: true,
+  })
   date: Date;
 
   @IsString({ message: ValidationMessages.IsString })
@@ -157,7 +172,11 @@ export class RoadsheetLine implements IRoadsheetLine {
   @IsArray({ message: ValidationMessages.IsArray })
   @IsObject({ each: true, message: ValidationMessages.IsObject })
   @Type(() => Travel)
-  @Transform(({ value }) => (value as ITravel[]).sort((a, b) => a.date.valueOf() - b.date.valueOf()), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      (value as ITravel[]).sort((a, b) => a.date.valueOf() - b.date.valueOf()),
+    { toClassOnly: true },
+  )
   @ValidateNested({ each: true })
   @ArrayUnique((t: ITravel) => DateTime.fromJSDate(t.date).toISODate(), {
     message: 'Chaque date doit se trouver une seule fois dans la liste',
@@ -167,7 +186,9 @@ export class RoadsheetLine implements IRoadsheetLine {
 
 export class TimesheetEntry implements ITimesheetEntry {
   @IsDate({ message: ValidationMessages.IsDate })
-  @Transform(({ value }) => normalizeDate(value, 'startOf'), { toClassOnly: true })
+  @Transform(({ value }) => normalizeDate(value, 'startOf'), {
+    toClassOnly: true,
+  })
   date: Date;
 
   @IsNumber(undefined, { message: ValidationMessages.IsNumber })
@@ -194,7 +215,13 @@ export class TimesheetLine implements ITimesheetLine {
   @IsArray({ message: ValidationMessages.IsArray })
   @IsObject({ each: true, message: ValidationMessages.IsObject })
   @Type(() => TimesheetEntry)
-  @Transform(({ value }) => (value as ITimesheetEntry[]).sort((a, b) => a.date.valueOf() - b.date.valueOf()), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      (value as ITimesheetEntry[]).sort(
+        (a, b) => a.date.valueOf() - b.date.valueOf(),
+      ),
+    { toClassOnly: true },
+  )
   @ValidateNested({ each: true })
   @ArrayMinSize(14, {
     message: 'La feuille de temps doit contenir exactement 14 jours',
@@ -223,7 +250,9 @@ export class Timesheet implements ITimesheet {
   })
   @Validate(DaysCountValidator, [14, 'end'])
   @Validate(DateIsIntervalBound)
-  @Transform(({ value }) => normalizeDate(value, 'startOf'), { toClassOnly: true })
+  @Transform(({ value }) => normalizeDate(value, 'startOf'), {
+    toClassOnly: true,
+  })
   begin: Date;
 
   @IsDate({ message: ValidationMessages.IsDate })
@@ -232,15 +261,23 @@ export class Timesheet implements ITimesheet {
   })
   @Validate(DaysCountValidator, [14, 'begin'])
   @Validate(DateIsIntervalBound)
-  @Transform(({ value }) => normalizeDate(value, 'endOf'), { toClassOnly: true })
+  @Transform(({ value }) => normalizeDate(value, 'endOf'), {
+    toClassOnly: true,
+  })
   end: Date;
 
   @IsArray({ message: ValidationMessages.IsArray })
   @Type(() => TimesheetLine)
   @ValidateNested({ each: true })
   @ArrayMinSize(1, { message: ValidationMessages.ArrayMinSize })
-  @ArrayUnique((line: ITimesheetLine) => [line.project, line.phase, line.activity, line.divers].join('/'),
-  { message: 'Chaque ligne doit avoir une combinaison project, activité, phase, divers différent'})
+  @ArrayUnique(
+    (line: ITimesheetLine) =>
+      [line.project, line.phase, line.activity, line.divers].join('/'),
+    {
+      message:
+        'Chaque ligne doit avoir une combinaison project, activité, phase, divers différent',
+    },
+  )
   lines: ITimesheetLine[];
 
   @IsArray({ message: ValidationMessages.IsArray })

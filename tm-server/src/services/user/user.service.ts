@@ -45,7 +45,10 @@ export class UserService extends CrudService<IUser> {
     } else {
       switch (user.role) {
         case UserRole.USER:
-          return !!originalDocumentOrQuery && originalDocumentOrQuery._id === user._id;
+          return (
+            !!originalDocumentOrQuery &&
+            originalDocumentOrQuery._id === user._id
+          );
         case UserRole.SUBADMIN:
         case UserRole.ADMIN:
         case UserRole.SUPERADMIN:

@@ -1,4 +1,4 @@
-import { CollectionReference, Timestamp } from '@google-cloud/firestore';
+import { CollectionReference } from '@google-cloud/firestore';
 import {
   IUser,
   ProjectType,
@@ -44,7 +44,11 @@ class TimelineCompletenessValidator implements ValidatorConstraintInterface {
         lastEndDate,
         DateTime.fromJSDate(value[i].begin),
       );
-      if (!interval.isValid || interval.length('hours') > 1 || interval.length('hours') < 0) {
+      if (
+        !interval.isValid ||
+        interval.length('hours') > 1 ||
+        interval.length('hours') < 0
+      ) {
         return false;
       }
       lastEndDate = DateTime.fromJSDate(value[i].end);
@@ -69,13 +73,17 @@ class TimelineBoundsValidator implements ValidatorConstraintInterface {
 export class BillingRate {
   @IsDate({ message: ValidationMessages.IsDate })
   @Type(() => Date)
-  @Transform(({ value }) => normalizeDate(value, 'startOf'), { toClassOnly: true })
+  @Transform(({ value }) => normalizeDate(value, 'startOf'), {
+    toClassOnly: true,
+  })
   begin: Date;
 
   @IsDate({ message: ValidationMessages.IsDate })
   @IsOptional()
   @Type(() => Date)
-  @Transform(({ value }) => value && normalizeDate(value, 'endOf'), { toClassOnly: true })
+  @Transform(({ value }) => value && normalizeDate(value, 'endOf'), {
+    toClassOnly: true,
+  })
   end?: Date;
 
   @IsNumber(undefined, { message: ValidationMessages.IsNumber })
@@ -126,7 +134,7 @@ export class User implements IUser {
 
   @IsString({ message: ValidationMessages.IsString })
   @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
-  @ValidateIf(user => !user._id)
+  @ValidateIf((user) => !user._id)
   password?: string;
 
   @IsArray({ message: ValidationMessages.IsArray })
@@ -134,7 +142,10 @@ export class User implements IUser {
   @Type(() => BillingGroup)
   @ArrayMinSize(2, { message: 'Il doit y avoir 2 groupes de facturations' })
   @ArrayMaxSize(2, { message: 'Il doit y avoir 2 groupes de facturations' })
-  @ArrayUnique((bg: BillingGroup) => bg.projectType, { message: 'Il doit y avoir une liste de taux pour chaque type de facturation' })
+  @ArrayUnique((bg: BillingGroup) => bg.projectType, {
+    message:
+      'Il doit y avoir une liste de taux pour chaque type de facturation',
+  })
   billingGroups: BillingGroup[];
 
   @IsBoolean({ message: ValidationMessages.IsBoolean })

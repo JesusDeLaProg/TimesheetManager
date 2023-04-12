@@ -9,7 +9,6 @@ import { DateTime } from 'luxon';
 import { TimesheetService } from './timesheet.service';
 import { ROOT_DOC } from '//config/constants';
 import { closeFirestore, initFirestore } from '//test/test-base';
-import { Status } from '//types/status';
 
 const subadminUser: IUser = {
   _id: '0',
@@ -49,8 +48,15 @@ describe('TimesheetService', () => {
     ) as CollectionReference<ITimesheet>;
     Users = root.collection('user') as CollectionReference<IUser>;
     await db.runTransaction(async (transaction) => {
-      transaction.set(Users.doc(subadminUser._id), Object.assign({ _id: undefined }, subadminUser))
-        .set(Users.doc(adminUser._id), Object.assign({ _id: undefined }, adminUser));
+      transaction
+        .set(
+          Users.doc(subadminUser._id),
+          Object.assign({ _id: undefined }, subadminUser),
+        )
+        .set(
+          Users.doc(adminUser._id),
+          Object.assign({ _id: undefined }, adminUser),
+        );
     });
   });
 
@@ -81,27 +87,36 @@ describe('TimesheetService', () => {
       user: '1',
       begin: begin.toJSDate(),
       end: begin.plus({ days: 13 }).toJSDate(),
-      lines: [{ project: '1', phase: '1', activity: '1', entries: [
-        { date: begin.toJSDate(), time: 1 },
-        { date: begin.plus({ days: 1 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 2 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 3 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 4 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 5 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 6 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 7 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 8 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 9 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 10 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 11 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 12 }).toJSDate(), time: 1 },
-        { date: begin.plus({ days: 13 }).toJSDate(), time: 1 },
-      ] }],
+      lines: [
+        {
+          project: '1',
+          phase: '1',
+          activity: '1',
+          entries: [
+            { date: begin.toJSDate(), time: 1 },
+            { date: begin.plus({ days: 1 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 2 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 3 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 4 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 5 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 6 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 7 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 8 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 9 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 10 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 11 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 12 }).toJSDate(), time: 1 },
+            { date: begin.plus({ days: 13 }).toJSDate(), time: 1 },
+          ],
+        },
+      ],
       roadsheetLines: [],
     };
     expect(service.create(subadminUser, newTimesheet)).rejects.toEqual({
       code: 403,
-      message: expect.stringMatching(/Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/)
+      message: expect.stringMatching(
+        /Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/,
+      ),
     });
   });
 });

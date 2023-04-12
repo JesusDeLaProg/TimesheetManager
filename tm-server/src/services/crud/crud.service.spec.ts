@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Query } from '@google-cloud/firestore';
-import { IsNumber, IsOptional, IsString, ValidationError } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import {
   initFirestore,
   closeFirestore,
@@ -184,8 +184,11 @@ describe('CrudService', () => {
     expect(await service.validate({ data: 'test' })).toMatchObject({
       __success: false,
       errors: [
-        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
-      ]
+        {
+          value: 'test',
+          constraints: { isNumber: 'data doit être un nombre. data: test' },
+        },
+      ],
     });
   });
 
@@ -201,8 +204,11 @@ describe('CrudService', () => {
     expect(await service.create(dummyUser, { data: 'test' })).toMatchObject({
       __success: false,
       errors: [
-        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
-      ]
+        {
+          value: 'test',
+          constraints: { isNumber: 'data doit être un nombre. data: test' },
+        },
+      ],
     });
   });
 
@@ -222,8 +228,11 @@ describe('CrudService', () => {
     ).toMatchObject({
       __success: false,
       errors: [
-        { value: 'test', constraints: { isNumber: 'data doit être un nombre. data: test'} }
-      ]
+        {
+          value: 'test',
+          constraints: { isNumber: 'data doit être un nombre. data: test' },
+        },
+      ],
     });
   });
 

@@ -1,6 +1,12 @@
 import { CollectionReference } from '@google-cloud/firestore';
 import { IPhase, StringId } from '@tm/types/models/datamodels';
-import { IsArray, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
 
