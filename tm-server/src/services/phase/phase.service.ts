@@ -1,23 +1,22 @@
 import {
   CollectionReference,
-  DocumentReference,
   Query,
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IPhase, UserRole } from '@tm/types/models/datamodels';
 import { CrudService } from '../crud/crud.service';
-import { ROOT_DOC } from '//config/constants';
 import { Phase, PhaseValidator } from '//dtos/phase';
 import { User } from '//dtos/user';
 import { AuthorizationUtils } from '//utils/authorization';
+import { PHASES } from '//config/constants';
 
 @Injectable()
 export class PhaseService extends CrudService<IPhase> {
-  constructor(@Inject(ROOT_DOC) root: DocumentReference) {
+  constructor(@Inject(PHASES) phases: CollectionReference<Phase>, validator: PhaseValidator) {
     super(
-      root.collection('phase') as CollectionReference<IPhase>,
+      phases,
       Phase,
-      PhaseValidator,
+      validator,
     );
   }
 

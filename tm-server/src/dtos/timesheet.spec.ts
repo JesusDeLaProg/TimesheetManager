@@ -6,10 +6,17 @@ import {
   Firestore,
   QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
-import { ITimesheet } from '@tm/types/models/datamodels';
+import { ITimesheet, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ValidationResult } from '../types/validator';
 import { Timesheet, TimesheetValidator } from './timesheet';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Provider } from '@nestjs/common';
+import { User } from './user';
+import { Project } from './project';
+import { Phase } from './phase';
+import { Activity } from './activity';
+import { ACTIVITIES, PHASES, PROJECTS, USERS } from '../config/constants';
 
 const VALID_INPUT_TIMESHEET: ITimesheet = {
   _id: '1',
@@ -102,21 +109,15 @@ const VALID_NORMALIZED_TIMESHEET: ITimesheet = {
 describe('TimesheetDTO', () => {
   let db: Firestore;
   let root: DocumentReference;
+  let providers: Provider[];
   let validator: TimesheetValidator;
-  let collection: CollectionReference<Timesheet>;
+  let users: CollectionReference<User>;
+  let projects: CollectionReference<Project>;
+  let phases: CollectionReference<Phase>;
+  let activities: CollectionReference<Activity>;
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('timesheet').withConverter({
-      toFirestore(classObj: Timesheet): DocumentData {
-        return instanceToPlain(classObj, { excludePrefixes: ['_'] });
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): Timesheet {
-        const classObj = plainToInstance(Timesheet, snapshot.data());
-        classObj._id = snapshot.id;
-        return classObj;
-      },
-    }) as CollectionReference<Timesheet>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -124,15 +125,29 @@ describe('TimesheetDTO', () => {
   });
 
   beforeEach(async () => {
-    validator = new TimesheetValidator(collection);
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TimesheetValidator,
+        ...providers
+      ],
+    }).compile();
+
+    validator = module.get<TimesheetValidator>(TimesheetValidator);
+    users = module.get<CollectionReference<User>>(USERS);
+    projects = module.get<CollectionReference<Project>>(PROJECTS);
+    phases = module.get<CollectionReference<Phase>>(PHASES);
+    activities = module.get<CollectionReference<Activity>>(ACTIVITIES);
+    await db.recursiveDelete(root);
   });
 
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
-  });
-
-  it('is valid', () => {
-    expect(validator.validate(VALID_INPUT_TIMESHEET)).resolves.toEqual<
+  it('is valid', async () => {
+    await Promise.all([
+      users.doc('2').set({ username: 'admin', firstName: '', lastName: '', billingGroups: [], email: '', isActive: true, password: '', role: UserRole.ADMIN }),
+      projects.doc('3').set({ client: 'Client 1', code: '23-01', name: '', isActive: true, type: ProjectType.PRIVE }),
+      phases.doc('4').set({ code: 'AB', name: '', activities: ['5'] }),
+      activities.doc('5').set({ code: 'BD', name: '' })
+    ])
+    await expect(validator.validate(VALID_INPUT_TIMESHEET)).resolves.toEqual<
       ValidationResult<Timesheet>
     >({
       __success: true,
@@ -140,8 +155,8 @@ describe('TimesheetDTO', () => {
     });
   });
 
-  it('is empty object and invalid', () => {
-    expect(validator.validate({})).resolves.toMatchObject<
+  it('is empty object and invalid', async () => {
+    await expect(validator.validate({})).resolves.toMatchObject<
       ValidationResult<Timesheet>
     >({
       __success: false,
@@ -193,8 +208,8 @@ describe('TimesheetDTO', () => {
     });
   });
 
-  it('has misaligned time bounds', () => {
-    expect(
+  it('has misaligned time bounds', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_TIMESHEET,
         begin: new Date(2023, 2, 8),
@@ -257,8 +272,8 @@ describe('TimesheetDTO', () => {
     });
   });
 
-  it('has date outside bounds', () => {
-    expect(
+  it('has date outside bounds', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_TIMESHEET,
         lines: [
@@ -320,8 +335,8 @@ describe('TimesheetDTO', () => {
     });
   });
 
-  it('is missing a date in the line', () => {
-    expect(
+  it('is missing a date in the line', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_TIMESHEET,
         lines: [
@@ -392,8 +407,8 @@ describe('TimesheetDTO', () => {
     });
   });
 
-  it('has an unknown project in the roadsheet', () => {
-    expect(
+  it('has an unknown project in the roadsheet', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_TIMESHEET,
         roadsheetLines: [
@@ -424,4 +439,36 @@ describe('TimesheetDTO', () => {
       ],
     });
   });
+
+  it('contains invalid foreign keys', async () => {
+    await expect(validator.validate(VALID_INPUT_TIMESHEET)).resolves.toMatchObject<ValidationResult<Timesheet>>({
+      __success: false,
+      errors: [
+        {
+          property: 'user',
+          constraints: { isForeignKey: 'user doit faire référence à un objet existant dans la collection user' }
+        },
+        {
+          property: 'lines',
+          children: [{
+            property: '0',
+            children: [
+              {
+                property: 'project',
+                constraints: { isForeignKey: 'project doit faire référence à un objet existant dans la collection project' }
+              },
+              {
+                property: 'phase',
+                constraints: { isForeignKey: 'phase doit faire référence à un objet existant dans la collection phase' }
+              },
+              {
+                property: 'activity',
+                constraints: { isForeignKey: 'activity doit faire référence à un objet existant dans la collection activity' }
+              }
+            ]
+          }]
+        }
+      ]
+    });
+  })
 });

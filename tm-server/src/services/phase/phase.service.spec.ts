@@ -1,23 +1,21 @@
 import {
   Firestore,
   DocumentReference,
-  CollectionReference,
 } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IPhase } from '@tm/types/models/datamodels';
 import { PhaseService } from './phase.service';
-import { ROOT_DOC } from '//config/constants';
 import { initFirestore, closeFirestore } from '//test/test-base';
+import { PhaseValidator } from '//dtos/phase';
+import { Provider } from '@nestjs/common';
 
 describe('PhaseService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: PhaseService;
-  let collection: CollectionReference<IPhase>;
+  let providers: Provider[];
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('phase') as CollectionReference<IPhase>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -26,14 +24,15 @@ describe('PhaseService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PhaseService, { provide: ROOT_DOC, useValue: root }],
+      providers: [
+        PhaseService,
+        PhaseValidator,
+        ...providers
+      ],
     }).compile();
 
     service = module.get<PhaseService>(PhaseService);
-  });
-
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {

@@ -58,7 +58,7 @@ export interface IProject {
     _id?: StringId;
     code: string;
     name: string;
-    client: StringId;
+    client: string;
     type: ProjectType;
     isActive: boolean;
 }

@@ -1,26 +1,22 @@
 import {
   CollectionReference,
-  DocumentReference,
   Query,
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
-import { ITimesheet, IUser, UserRole } from '@tm/types/models/datamodels';
+import { ITimesheet, UserRole } from '@tm/types/models/datamodels';
 import { CrudService } from '../crud/crud.service';
-import { ROOT_DOC } from '//config/constants';
+import { TIMESHEETS, USERS } from '//config/constants';
 import { Timesheet, TimesheetValidator } from '//dtos/timesheet';
 import { User } from '//dtos/user';
 
 @Injectable()
 export class TimesheetService extends CrudService<ITimesheet> {
-  private readonly Users: CollectionReference<IUser>;
-
-  constructor(@Inject(ROOT_DOC) root: DocumentReference) {
+  constructor(@Inject(TIMESHEETS) timesheets: CollectionReference<Timesheet>, @Inject(USERS) private users: CollectionReference<User>, validator: TimesheetValidator) {
     super(
-      root.collection('timesheet') as CollectionReference<ITimesheet>,
+      timesheets,
       Timesheet,
-      TimesheetValidator,
+      validator,
     );
-    this.Users = root.collection('user') as CollectionReference<IUser>;
   }
 
   protected async authorizeRead(
@@ -56,7 +52,7 @@ export class TimesheetService extends CrudService<ITimesheet> {
     if (user._id === updatedDocument.user) {
       return true;
     }
-    const newOwner = (await this.Users.doc(updatedDocument.user).get()).data();
+    const newOwner = (await this.users.doc(updatedDocument.user).get()).data();
     return user.role > newOwner.role;
   }
 
@@ -71,11 +67,11 @@ export class TimesheetService extends CrudService<ITimesheet> {
     ) {
       return true;
     }
-    const originalOwner = this.Users.doc(originalDocument.user).get();
+    const originalOwner = this.users.doc(originalDocument.user).get();
     const newOwner =
       originalDocument.user === updatedDocument.user
         ? originalOwner
-        : this.Users.doc(updatedDocument.user).get();
+        : this.users.doc(updatedDocument.user).get();
     return (
       (user._id === originalDocument.user ||
         user.role > (await originalOwner).data().role) &&

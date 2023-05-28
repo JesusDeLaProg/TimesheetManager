@@ -4,11 +4,13 @@ import {
   Firestore,
 } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ITimesheet, IUser, UserRole } from '@tm/types/models/datamodels';
+import { IActivity, IPhase, IProject, ITimesheet, IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { DateTime } from 'luxon';
 import { TimesheetService } from './timesheet.service';
-import { ROOT_DOC } from '//config/constants';
 import { closeFirestore, initFirestore } from '//test/test-base';
+import { ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS } from '//config/constants';
+import { TimesheetValidator } from '//dtos/timesheet';
+import { Provider } from '@nestjs/common';
 
 const subadminUser: IUser = {
   _id: '0',
@@ -38,50 +40,69 @@ describe('TimesheetService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: TimesheetService;
-  let Timesheets: CollectionReference<ITimesheet>;
+  let providers: Provider[];
   let Users: CollectionReference<IUser>;
+  let Projects: CollectionReference<IProject>;
+  let Phases: CollectionReference<IPhase>;
+  let Activities: CollectionReference<IActivity>;
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    Timesheets = root.collection(
-      'timesheet',
-    ) as CollectionReference<ITimesheet>;
-    Users = root.collection('user') as CollectionReference<IUser>;
-    await db.runTransaction(async (transaction) => {
-      transaction
-        .set(
-          Users.doc(subadminUser._id),
-          Object.assign({ _id: undefined }, subadminUser),
-        )
-        .set(
-          Users.doc(adminUser._id),
-          Object.assign({ _id: undefined }, adminUser),
-        );
-    });
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
-    await db.recursiveDelete(Users);
     await closeFirestore({ db, root });
   });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TimesheetService, { provide: ROOT_DOC, useValue: root }],
+      providers: [
+        TimesheetService,
+        TimesheetValidator,
+        ...providers
+      ],
     }).compile();
 
     service = module.get<TimesheetService>(TimesheetService);
+    Users = module.get(USERS);
+    Projects = module.get(PROJECTS);
+    Phases = module.get(PHASES);
+    Activities = module.get(ACTIVITIES);
+
+    await db.runTransaction(async (transaction) => {
+      transaction
+      .set(
+        Users.doc(subadminUser._id),
+        Object.assign({ _id: undefined }, subadminUser),
+      )
+      .set(
+        Users.doc(adminUser._id),
+        Object.assign({ _id: undefined }, adminUser),
+      )
+      .set(
+        Projects.doc('2'),
+        { client: 'Client 1', code: '23-01', name: 'Proj 1', isActive: true, type: ProjectType.PUBLIC },
+      )
+      .set(
+        Phases.doc('3'),
+        { code: 'AD', name: 'Admin', activities: ['4'] },
+      )
+      .set(
+        Activities.doc('4'),
+        { code: 'GE', name: 'General' },
+      );
+    });
   });
 
   afterEach(async () => {
-    await db.recursiveDelete(Timesheets);
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should prevent creating timesheets for more priviledged users', () => {
+  it('should prevent creating timesheets for more priviledged users', async () => {
     const begin = DateTime.fromSQL('2023-03-12');
     const newTimesheet: ITimesheet = {
       user: '1',
@@ -89,9 +110,9 @@ describe('TimesheetService', () => {
       end: begin.plus({ days: 13 }).toJSDate(),
       lines: [
         {
-          project: '1',
-          phase: '1',
-          activity: '1',
+          project: '2',
+          phase: '3',
+          activity: '4',
           entries: [
             { date: begin.toJSDate(), time: 1 },
             { date: begin.plus({ days: 1 }).toJSDate(), time: 1 },
@@ -112,7 +133,7 @@ describe('TimesheetService', () => {
       ],
       roadsheetLines: [],
     };
-    expect(service.create(subadminUser, newTimesheet)).rejects.toEqual({
+    await expect(service.create(subadminUser, newTimesheet)).rejects.toEqual({
       code: 403,
       message: expect.stringMatching(
         /Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/,

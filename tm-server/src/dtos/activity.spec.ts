@@ -1,33 +1,21 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
 import {
-  CollectionReference,
-  DocumentData,
   DocumentReference,
   Firestore,
-  QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ValidationResult } from '../types/validator';
 import { Activity, ActivityValidator } from './activity';
+import { Provider } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('ActivityDTO', () => {
   let db: Firestore;
   let root: DocumentReference;
   let validator: ActivityValidator;
-  let collection: CollectionReference<Activity>;
+  let providers: Provider[];
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('activity').withConverter({
-      toFirestore(classObj: Activity): DocumentData {
-        return instanceToPlain(classObj, { excludePrefixes: ['_'] });
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): Activity {
-        const classObj = plainToInstance(Activity, snapshot.data());
-        classObj._id = snapshot.id;
-        return classObj;
-      },
-    }) as CollectionReference<Activity>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -35,15 +23,19 @@ describe('ActivityDTO', () => {
   });
 
   beforeEach(async () => {
-    validator = new ActivityValidator(collection);
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ActivityValidator,
+        ...providers
+      ],
+    }).compile();
+
+    validator = module.get<ActivityValidator>(ActivityValidator);
+    await db.recursiveDelete(root);
   });
 
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
-  });
-
-  it('is valid', () => {
-    expect(
+  it('is valid', async () => {
+    await expect(
       validator.validate({ _id: '1', code: 'AB', name: 'test' }),
     ).resolves.toEqual<ValidationResult<Activity>>({
       __success: true,
@@ -53,8 +45,8 @@ describe('ActivityDTO', () => {
     });
   });
 
-  it('is empty object and invalid', () => {
-    expect(validator.validate({})).resolves.toMatchObject<
+  it('is empty object and invalid', async () => {
+    await expect(validator.validate({})).resolves.toMatchObject<
       ValidationResult<Activity>
     >({
       __success: false,
@@ -77,8 +69,8 @@ describe('ActivityDTO', () => {
     });
   });
 
-  it('is missing code and invalid', () => {
-    expect(validator.validate({ name: 'Abcd' })).resolves.toMatchObject<
+  it('is missing code and invalid', async () => {
+    await expect(validator.validate({ name: 'Abcd' })).resolves.toMatchObject<
       ValidationResult<Activity>
     >({
       __success: false,
@@ -94,8 +86,8 @@ describe('ActivityDTO', () => {
     });
   });
 
-  it('is missing name and invalid', () => {
-    expect(validator.validate({ code: 'AB' })).resolves.toMatchObject<
+  it('is missing name and invalid', async () => {
+    await expect(validator.validate({ code: 'AB' })).resolves.toMatchObject<
       ValidationResult<Activity>
     >({
       __success: false,
@@ -111,8 +103,8 @@ describe('ActivityDTO', () => {
     });
   });
 
-  it('has invalid code', () => {
-    expect(validator.validate({ code: '1ab' })).resolves.toMatchObject<
+  it('has invalid code', async () => {
+    await expect(validator.validate({ code: '1ab' })).resolves.toMatchObject<
       ValidationResult<Activity>
     >({
       __success: false,

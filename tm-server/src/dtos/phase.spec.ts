@@ -1,33 +1,25 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
 import {
   CollectionReference,
-  DocumentData,
   DocumentReference,
   Firestore,
-  QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ValidationResult } from '../types/validator';
 import { Phase, PhaseValidator } from './phase';
+import { Provider } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Activity } from './activity';
+import { ACTIVITIES } from '../config/constants';
 
 describe('PhaseDTO', () => {
   let db: Firestore;
   let root: DocumentReference;
   let validator: PhaseValidator;
-  let collection: CollectionReference<Phase>;
+  let providers: Provider[];
+  let activities: CollectionReference<Activity>;
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('phase').withConverter({
-      toFirestore(classObj: Phase): DocumentData {
-        return instanceToPlain(classObj, { excludePrefixes: ['_'] });
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): Phase {
-        const classObj = plainToInstance(Phase, snapshot.data());
-        classObj._id = snapshot.id;
-        return classObj;
-      },
-    }) as CollectionReference<Phase>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -35,15 +27,25 @@ describe('PhaseDTO', () => {
   });
 
   beforeEach(async () => {
-    validator = new PhaseValidator(collection);
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PhaseValidator,
+        ...providers
+      ],
+    }).compile();
+
+    validator = module.get<PhaseValidator>(PhaseValidator);
+    activities = module.get<CollectionReference<Activity>>(ACTIVITIES);
+    await db.recursiveDelete(root);
   });
 
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
-  });
-
-  it('is valid', () => {
-    expect(
+  it('is valid Phase', async () => {
+    await db.runTransaction(async (transaction) => {
+      transaction
+        .create(activities.doc('2'), { code: 'CD', name: 'Act 1' })
+        .create(activities.doc('3'), { code: 'EF', name: 'Act 2' });
+    });
+    await expect(
       validator.validate({
         _id: '1',
         code: 'AB',
@@ -59,8 +61,36 @@ describe('PhaseDTO', () => {
     });
   });
 
-  it('is empty object and invalid', () => {
-    expect(validator.validate({})).resolves.toMatchObject<
+  it('contains invalid Activity', async () => {
+    await expect(
+      validator.validate({
+        _id: '1',
+        code: 'AB',
+        name: 'test',
+        activities: ['2', '3'],
+      }),
+    ).resolves.toMatchObject<ValidationResult<Phase>>({
+      __success: false,
+      errors: [
+        {
+          property: 'activities',
+          children: [
+            {
+              property: '0',
+              constraints: { isForeignKey: 'activities doit faire référence à un objet existant dans la collection activity' }
+            },
+            {
+              property: '1',
+              constraints: { isForeignKey: 'activities doit faire référence à un objet existant dans la collection activity' }
+            },
+          ]
+        }
+      ]
+    });
+  });
+
+  it('is empty object and invalid', async () => {
+    await expect(validator.validate({})).resolves.toMatchObject<
       ValidationResult<Phase>
     >({
       __success: false,
@@ -90,8 +120,8 @@ describe('PhaseDTO', () => {
     });
   });
 
-  it('is missing code and invalid', () => {
-    expect(
+  it('is missing code and invalid', async () => {
+    await expect(
       validator.validate({ name: 'Abcd', activities: ['2', '3'] }),
     ).resolves.toMatchObject<ValidationResult<Phase>>({
       __success: false,
@@ -107,8 +137,8 @@ describe('PhaseDTO', () => {
     });
   });
 
-  it('is missing name and invalid', () => {
-    expect(
+  it('is missing name and invalid', async () => {
+    await expect(
       validator.validate({ code: 'AB', activities: ['2', '3'] }),
     ).resolves.toMatchObject<ValidationResult<Phase>>({
       __success: false,
@@ -124,8 +154,8 @@ describe('PhaseDTO', () => {
     });
   });
 
-  it('has invalid code', () => {
-    expect(validator.validate({ code: '1ab' })).resolves.toMatchObject<
+  it('has invalid code', async () => {
+    await expect(validator.validate({ code: '1ab' })).resolves.toMatchObject<
       ValidationResult<Phase>
     >({
       __success: false,
@@ -154,8 +184,8 @@ describe('PhaseDTO', () => {
     });
   });
 
-  it('has string activities and invalid', () => {
-    expect(
+  it('has string activities and invalid', async () => {
+    await expect(
       validator.validate({ code: 'AB', name: 'test', activities: '2' }),
     ).resolves.toMatchObject<ValidationResult<Phase>>({
       __success: false,

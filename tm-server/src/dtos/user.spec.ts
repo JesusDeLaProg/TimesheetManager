@@ -93,14 +93,11 @@ describe('UserDTO', () => {
 
   beforeEach(async () => {
     validator = new UserValidator(collection);
-  });
-
-  afterEach(async () => {
     await db.recursiveDelete(collection);
   });
 
-  it('is valid', () => {
-    expect(validator.validate(VALID_INPUT_USER)).resolves.toEqual<
+  it('is valid', async () => {
+    await expect(validator.validate(VALID_INPUT_USER)).resolves.toEqual<
       ValidationResult<User>
     >({
       __success: true,
@@ -108,8 +105,8 @@ describe('UserDTO', () => {
     });
   });
 
-  it('is empty object and invalid', () => {
-    expect(validator.validate({})).resolves.toMatchObject<
+  it('is empty object and invalid', async () => {
+    await expect(validator.validate({})).resolves.toMatchObject<
       ValidationResult<User>
     >({
       __success: false,
@@ -173,8 +170,8 @@ describe('UserDTO', () => {
     });
   });
 
-  it('has missing billing group', () => {
-    expect(
+  it('has missing billing group', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_USER,
         billingGroups: [
@@ -199,8 +196,8 @@ describe('UserDTO', () => {
     });
   });
 
-  it('has has misaligned billing groups', () => {
-    expect(
+  it('has has misaligned billing groups', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_USER,
         billingGroups: [
@@ -264,8 +261,8 @@ describe('UserDTO', () => {
     });
   });
 
-  it('has unknown project type in billing group', () => {
-    expect(
+  it('has unknown project type in billing group', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_USER,
         billingGroups: [
@@ -307,8 +304,8 @@ describe('UserDTO', () => {
     });
   });
 
-  it('is missing a password for new user', () => {
-    expect(
+  it('is missing a password for new user', async () => {
+    await expect(
       validator.validate({
         ...VALID_INPUT_USER,
         _id: undefined,

@@ -31,6 +31,8 @@ import {
 import { DateTime, Interval } from 'luxon';
 import { BaseObjectValidator, normalizeDate } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { USERS } from '../config/constants';
 
 @ValidatorConstraint({ name: 'timelineCompleteness', async: false })
 class TimelineCompletenessValidator implements ValidatorConstraintInterface {
@@ -152,8 +154,9 @@ export class User implements IUser {
   isActive: boolean;
 }
 
+@Injectable()
 export class UserValidator extends BaseObjectValidator<User> {
-  constructor(users: CollectionReference<User>) {
+  constructor(@Inject(USERS) users: CollectionReference<User>) {
     super(users, User);
     this.VALIDATORS.push((obj) =>
       this.validateUnique(obj, [
@@ -170,8 +173,8 @@ export class UserValidator extends BaseObjectValidator<User> {
     );
   }
 
-  protected normalize(user: User) {
-    for (const group of user.billingGroups) {
+  protected normalize(user: User): void {
+    for (const group of user.billingGroups ?? []) {
       group.timeline.sort((a, b) => a.begin.valueOf() - b.begin.valueOf());
       for (const rate of group.timeline) {
         if (rate.begin.valueOf() != 0) {

@@ -1,23 +1,22 @@
 import {
   CollectionReference,
-  DocumentReference,
   Query,
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IActivity, UserRole } from '@tm/types/models/datamodels';
-import { ROOT_DOC } from '//config/constants';
 import { Activity, ActivityValidator } from '//dtos/activity';
 import { User } from '//dtos/user';
 import { CrudService } from '//services/crud/crud.service';
 import { AuthorizationUtils } from '//utils/authorization';
+import { ACTIVITIES } from '//config/constants';
 
 @Injectable()
 export class ActivityService extends CrudService<IActivity> {
-  constructor(@Inject(ROOT_DOC) root: DocumentReference) {
+  constructor(@Inject(ACTIVITIES) activities: CollectionReference<Activity>, validator: ActivityValidator) {
     super(
-      root.collection('activity') as CollectionReference<IActivity>,
+      activities,
       Activity,
-      ActivityValidator,
+      validator,
     );
   }
 

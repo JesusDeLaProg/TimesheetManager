@@ -6,22 +6,24 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { IProject } from '@tm/types/models/datamodels';
 import { ProjectService } from './project.service';
-import { ROOT_DOC } from '//config/constants';
 import {
   addDocumentsToCollection,
   closeFirestore,
   initFirestore,
   testUser,
 } from '//test/test-base';
+import { ProjectValidator } from '//dtos/project';
+import { Provider } from '@nestjs/common';
 
 describe('ProjectService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: ProjectService;
+  let providers: Provider[];
   let collection: CollectionReference<IProject>;
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
+    ({ db, root, providers } = await initFirestore());
     collection = root.collection('project') as CollectionReference<IProject>;
   });
 
@@ -31,14 +33,15 @@ describe('ProjectService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProjectService, { provide: ROOT_DOC, useValue: root }],
+      providers: [
+        ProjectService,
+        ProjectValidator,
+        ...providers
+      ],
     }).compile();
 
     service = module.get<ProjectService>(ProjectService);
-  });
-
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {

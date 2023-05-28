@@ -1,11 +1,10 @@
 import {
   CollectionReference,
-  DocumentReference,
   Query,
 } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IProject, UserRole } from '@tm/types/models/datamodels';
-import { ROOT_DOC } from '//config/constants';
+import { PROJECTS } from '//config/constants';
 import { Project, ProjectValidator } from '//dtos/project';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
@@ -14,11 +13,11 @@ import { AuthorizationUtils } from '//utils/authorization';
 
 @Injectable()
 export class ProjectService extends CrudService<IProject> {
-  constructor(@Inject(ROOT_DOC) root: DocumentReference) {
+  constructor(@Inject(PROJECTS) projects: CollectionReference<Project>, validator: ProjectValidator) {
     super(
-      root.collection('project') as CollectionReference<IProject>,
+      projects,
       Project,
-      ProjectValidator,
+      validator,
     );
   }
 

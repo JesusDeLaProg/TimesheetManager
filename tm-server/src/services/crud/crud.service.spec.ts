@@ -4,6 +4,7 @@ import {
   initFirestore,
   closeFirestore,
   addDocumentsToCollection,
+  documentConverter,
 } from '//test/test-base';
 import { CrudService } from './crud.service';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
@@ -89,7 +90,7 @@ describe('CrudService', () => {
 
   beforeAll(async () => {
     ({ db, root } = await initFirestore());
-    collection = root.collection('base') as CollectionReference<Data>;
+    collection = (root.collection('base')).withConverter(documentConverter(Data)) as CollectionReference<Data>;
   });
 
   afterAll(async () => {
@@ -100,11 +101,9 @@ describe('CrudService', () => {
     service = new AllAuthorizedCrudService<Data>(
       collection,
       Data,
-      DataValidator,
+      new DataValidator(collection),
     );
-  });
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {

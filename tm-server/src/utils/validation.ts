@@ -39,11 +39,11 @@ export class BaseObjectValidator<T extends { _id?: StringId }>
 
   protected convertToTypedObject(object: unknown): T {
     if (object instanceof this.objectClass) {
-      // this.normalize(object);
+      this.normalize(object);
       return object;
     }
     const obj = plainToInstance(this.objectClass, object);
-    // this.normalize(obj);
+    this.normalize(obj);
     return obj;
   }
 
@@ -101,9 +101,22 @@ export class BaseObjectValidator<T extends { _id?: StringId }>
     return errors;
   }
 
-  protected normalize(object: T) {
-    return undefined;
+  protected async validateForeignKey(object: any, property: string, key: StringId, collection: CollectionReference, propertyMessage?: string): Promise<ValidationError | null> {
+    const error = Object.assign(new ValidationError(), {
+      property,
+      target: object,
+      value: key,
+      constraints: { isForeignKey: `${propertyMessage ?? property} doit faire référence à un objet existant dans la collection ${collection.id}` }
+    } as ValidationError);
+    if (!key) return error;
+
+    if (!(await collection.doc(key).get()).exists) {
+      return error;
+    }
+    return null;
   }
+
+  protected normalize(object: T): void {}
 
   validate(object: unknown): Promise<ValidationResult<T>> {
     return this.combineValidators(

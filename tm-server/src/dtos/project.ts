@@ -1,5 +1,5 @@
 import { CollectionReference } from '@google-cloud/firestore';
-import { IProject, ProjectType, StringId } from '@tm/types/models/datamodels';
+import { IProject, ProjectType } from '@tm/types/models/datamodels';
 import {
   IsBoolean,
   IsEnum,
@@ -10,6 +10,8 @@ import {
 } from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { PROJECTS } from '../config/constants';
 
 export class Project implements IProject {
   @IsString({ message: ValidationMessages.IsString })
@@ -27,7 +29,7 @@ export class Project implements IProject {
 
   @IsString({ message: ValidationMessages.IsString })
   @IsNotEmpty({ message: ValidationMessages.IsNotEmpty })
-  client: StringId;
+  client: string;
 
   @IsEnum(ProjectType, { message: ValidationMessages.IsEnum })
   type: ProjectType;
@@ -36,8 +38,9 @@ export class Project implements IProject {
   isActive: boolean;
 }
 
+@Injectable()
 export class ProjectValidator extends BaseObjectValidator<Project> {
-  constructor(projects: CollectionReference<Project>) {
+  constructor(@Inject(PROJECTS) projects: CollectionReference<Project>) {
     super(projects, Project);
     this.VALIDATORS.push((obj) =>
       this.validateUnique(obj, [

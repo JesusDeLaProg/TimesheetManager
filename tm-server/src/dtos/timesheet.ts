@@ -31,6 +31,13 @@ import {
 import { DateTime, Interval } from 'luxon';
 import { BaseObjectValidator, normalizeDate } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS } from '../config/constants';
+import { User } from './user';
+import { Project } from './project';
+import { Phase } from './phase';
+import { Activity } from './activity';
+import { DocumentSnapshot } from '@google-cloud/firestore';
 
 @ValidatorConstraint({ name: 'dayOfWeek', async: false })
 class DayOfWeekValidator implements ValidatorConstraintInterface {
@@ -288,23 +295,31 @@ export class Timesheet implements ITimesheet {
   roadsheetLines: IRoadsheetLine[];
 }
 
+@Injectable()
 export class TimesheetValidator extends BaseObjectValidator<Timesheet> {
-  constructor(timesheets: CollectionReference<Timesheet>) {
+  constructor(
+    @Inject(TIMESHEETS) timesheets: CollectionReference<Timesheet>,
+    @Inject(USERS) private users: CollectionReference<User>,
+    @Inject(PROJECTS) private projects: CollectionReference<Project>,
+    @Inject(PHASES) private phases: CollectionReference<Phase>,
+    @Inject(ACTIVITIES) private activities: CollectionReference<Activity>
+  ) {
     super(timesheets, Timesheet);
-    this.VALIDATORS.push((obj) => this.validateNonOverlapping(obj));
+    this.VALIDATORS.push(
+      (obj) => this.validateNonOverlapping(obj),
+      (obj) => this.validateForeignKeys(obj),
+      (obj) => this.validateActivitiesInPhase(obj));
   }
 
-  protected normalize(timesheet: Timesheet) {
+  protected normalize(timesheet: Timesheet): void {
     timesheet.begin = DateTime.fromJSDate(timesheet.begin)
       .startOf('day')
       .toJSDate();
     timesheet.end = DateTime.fromJSDate(timesheet.end).endOf('day').toJSDate();
-    for (const line of timesheet.lines) {
-      for (const entry of line.entries) {
+    for (const line of timesheet.lines ?? []) {
+      for (const entry of line.entries ?? []) {
         entry.date = DateTime.fromJSDate(entry.date).startOf('day').toJSDate();
       }
-    }
-    for (const line of timesheet.lines) {
       line.entries.sort((a, b) => a.date.valueOf() - b.date.valueOf());
     }
   }
@@ -370,5 +385,62 @@ export class TimesheetValidator extends BaseObjectValidator<Timesheet> {
       }
     }
     return [];
+  }
+
+  async validateForeignKeys(timesheet: Timesheet): Promise<ValidationError[]> {
+    const errors = [
+      this.validateForeignKey(timesheet, 'user', timesheet.user, this.users),
+      new Promise(async (resolve: (v: ValidationError) => void, reject) => {
+        try {
+          const linesError = Object.assign(new ValidationError(), {
+            property: 'lines',
+            target: timesheet,
+            value: timesheet.lines,
+            children: (await Promise.all(timesheet.lines.map(async (l, i) => 
+              Object.assign(new ValidationError(), {
+                property: String(i),
+                target: timesheet.lines,
+                value: l,
+                children: (await Promise.all([
+                  this.validateForeignKey(timesheet, 'project', timesheet.lines[i].project, this.projects),
+                  this.validateForeignKey(timesheet, 'phase', timesheet.lines[i].phase, this.phases),
+                  this.validateForeignKey(timesheet, 'activity', timesheet.lines[i].activity, this.activities),
+                ])).filter(e => !!e)
+              } as ValidationError)))).filter(l => l.children.length > 0)
+          } as ValidationError);
+          resolve(linesError.children.length > 0 ? linesError : null);
+        } catch (e) {
+          reject(e);
+        }
+        ;})
+    ];
+    return (await Promise.all(errors)).filter(e => !!e);
+  }
+
+  async validateActivitiesInPhase(timesheet: Timesheet): Promise<ValidationError[]> {
+    const error = Object.assign(new ValidationError(), {
+      property: 'lines',
+      target: timesheet,
+      value: timesheet.lines,
+      children: (await Promise.all(timesheet.lines.map(async (l, i) => {
+        const phase = (await this.phases.doc(l.phase).get()).data();
+        if (phase.activities.includes(l.activity)) {
+          return null;
+        } else {
+          return Object.assign(new ValidationError(), {
+            property: String(i),
+            target: timesheet.lines,
+            value: l,
+            children: [Object.assign(new ValidationError(), {
+              property: 'activity',
+              target: l,
+              value: l.activity,
+              constraints: { activityAllowedWithPhase: `${l.activity} doit être une activité permise pendant la phase ${phase.code}` }
+            } as ValidationError)]
+          } as ValidationError);
+        }
+      }))).filter(e => e?.children.length > 0)
+    } as ValidationError)
+    return error.children.length > 0 ? [error] : [];
   }
 }

@@ -1,14 +1,10 @@
 import {
   CollectionReference,
-  DocumentData,
-  FirestoreDataConverter,
   Query,
-  QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
 import { StringId } from '@tm/types/models/datamodels';
 import {
   ClassConstructor,
-  instanceToPlain,
   plainToInstance,
 } from 'class-transformer';
 import { QueryOptions } from '//dtos/query_options';
@@ -16,37 +12,17 @@ import { User } from '//dtos/user';
 import { Status } from '//types/status';
 import {
   ObjectValidator,
-  ObjectValidatorConstructor,
   ValidationResult,
 } from '//types/validator';
 
 export type MutationResult<T> = ValidationResult<T>;
 export class CrudService<T extends { _id?: StringId }> {
-  private documentConverter: FirestoreDataConverter<T>;
-  private objectValidator: ObjectValidator<T>;
-  protected collection: CollectionReference<T>;
 
   constructor(
-    collection: CollectionReference<T>,
+    private collection: CollectionReference<T>,
     private objectClass: ClassConstructor<T>,
-    ObjectValidatorClass: ObjectValidatorConstructor<T>,
-  ) {
-    this.documentConverter = {
-      toFirestore(classObj: T): DocumentData {
-        return instanceToPlain(classObj, { excludePrefixes: ['_'] });
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): T {
-        const classObj = plainToInstance(objectClass, snapshot.data());
-        classObj._id = snapshot.id;
-        return classObj;
-      },
-    };
-    this.collection = collection.withConverter(this.documentConverter);
-    this.objectValidator = new ObjectValidatorClass(
-      this.collection,
-      objectClass,
-    );
-  }
+    private objectValidator: ObjectValidator<T>,
+  ) {}
 
   protected async authorizeRead(
     user: User,

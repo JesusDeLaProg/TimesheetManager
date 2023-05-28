@@ -1,34 +1,22 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
 import {
-  CollectionReference,
-  DocumentData,
   DocumentReference,
   Firestore,
-  QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
 import { ProjectType } from '@tm/types/models/datamodels';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ValidationResult } from '../types/validator';
 import { Project, ProjectValidator } from './project';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Provider } from '@nestjs/common';
 
 describe('ProjectDTO', () => {
   let db: Firestore;
   let root: DocumentReference;
   let validator: ProjectValidator;
-  let collection: CollectionReference<Project>;
+  let providers: Provider[];
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('project').withConverter({
-      toFirestore(classObj: Project): DocumentData {
-        return instanceToPlain(classObj, { excludePrefixes: ['_'] });
-      },
-      fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): Project {
-        const classObj = plainToInstance(Project, snapshot.data());
-        classObj._id = snapshot.id;
-        return classObj;
-      },
-    }) as CollectionReference<Project>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -36,20 +24,24 @@ describe('ProjectDTO', () => {
   });
 
   beforeEach(async () => {
-    validator = new ProjectValidator(collection);
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ProjectValidator,
+        ...providers
+      ],
+    }).compile();
+
+    validator = module.get<ProjectValidator>(ProjectValidator);
+    await db.recursiveDelete(root);
   });
 
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
-  });
-
-  it('is valid', () => {
-    expect(
+  it('is valid', async () => {
+    await expect(
       validator.validate({
         _id: '1',
         code: '23-01',
         name: 'test',
-        client: '2',
+        client: 'Client 1',
         type: ProjectType.PUBLIC,
         isActive: true,
       }),
@@ -58,14 +50,14 @@ describe('ProjectDTO', () => {
       _id: '1',
       code: '23-01',
       name: 'test',
-      client: '2',
+      client: 'Client 1',
       type: ProjectType.PUBLIC,
       isActive: true,
     });
   });
 
-  it('is empty object and invalid', () => {
-    expect(validator.validate({})).resolves.toMatchObject<
+  it('is empty object and invalid', async () => {
+    await expect(validator.validate({})).resolves.toMatchObject<
       ValidationResult<Project>
     >({
       __success: false,
@@ -105,11 +97,11 @@ describe('ProjectDTO', () => {
     });
   });
 
-  it('is missing code and invalid', () => {
-    expect(
+  it('is missing code and invalid', async () => {
+    await expect(
       validator.validate({
         name: 'Projet 1',
-        client: '1',
+        client: 'Client 1',
         type: ProjectType.PUBLIC,
         isActive: true,
       }),
@@ -127,11 +119,11 @@ describe('ProjectDTO', () => {
     });
   });
 
-  it('is missing name and invalid', () => {
-    expect(
+  it('is missing name and invalid', async () => {
+    await expect(
       validator.validate({
         code: '23-01',
-        client: '1',
+        client: 'Client 1',
         type: ProjectType.PUBLIC,
         isActive: true,
       }),
@@ -149,12 +141,12 @@ describe('ProjectDTO', () => {
     });
   });
 
-  it('has invalid code', () => {
-    expect(
+  it('has invalid code', async () => {
+    await expect(
       validator.validate({
         code: 'ABC',
         name: 'Projet 1',
-        client: '1',
+        client: 'Client 1',
         type: ProjectType.PUBLIC,
         isActive: true,
       }),

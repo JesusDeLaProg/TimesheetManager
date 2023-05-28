@@ -3,6 +3,8 @@ import { IActivity, StringId } from '@tm/types/models/datamodels';
 import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { ACTIVITIES } from '../config/constants';
 
 export class Activity implements IActivity {
   @IsString({ message: ValidationMessages.IsString })
@@ -19,8 +21,9 @@ export class Activity implements IActivity {
   name: string;
 }
 
+@Injectable()
 export class ActivityValidator extends BaseObjectValidator<Activity> {
-  constructor(activities: CollectionReference<Activity>) {
+  constructor(@Inject(ACTIVITIES) activities: CollectionReference<Activity>) {
     super(activities, Activity);
     this.VALIDATORS.push((obj) =>
       this.validateUnique(obj, [

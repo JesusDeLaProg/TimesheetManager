@@ -3,15 +3,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
-import { ROOT_DOC } from '//config/constants';
+import { USERS } from '//config/constants';
+import { UserValidator } from '//dtos/user';
+import { Provider } from '@nestjs/common';
 
 describe('UserService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: UserService;
+  let providers: Provider[];
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -20,14 +23,15 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, { provide: ROOT_DOC, useValue: root }],
+      providers: [
+        UserService,
+        UserValidator,
+        ...providers
+      ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-  });
-
-  afterEach(async () => {
-    await db.recursiveDelete(root.collection('user'));
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {

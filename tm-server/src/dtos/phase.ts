@@ -6,9 +6,13 @@ import {
   IsOptional,
   IsString,
   Matches,
+  ValidationError,
 } from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { Activity } from './activity';
+import { ACTIVITIES, PHASES } from '../config/constants';
 
 export class Phase implements IPhase {
   @IsString({ message: ValidationMessages.IsString })
@@ -30,8 +34,9 @@ export class Phase implements IPhase {
   activities: StringId[];
 }
 
+@Injectable()
 export class PhaseValidator extends BaseObjectValidator<Phase> {
-  constructor(phases: CollectionReference<Phase>) {
+  constructor(@Inject(PHASES) phases: CollectionReference<Phase>, @Inject(ACTIVITIES) private activities: CollectionReference<Activity>) {
     super(phases, Phase);
     this.VALIDATORS.push((obj) =>
       this.validateUnique(obj, [
@@ -44,6 +49,21 @@ export class PhaseValidator extends BaseObjectValidator<Phase> {
           errorMessage: 'Le nom de la phase doit être unique',
         },
       ]),
+      async (obj) =>
+      await this.validateForeignKeys(obj)
     );
+  }
+
+  async validateForeignKeys(phase: Phase): Promise<ValidationError[]> {
+    const errors = (await Promise.all(phase.activities.map((a, i) => this.validateForeignKey(phase, String(i), a, this.activities, 'activities')))).filter(e => !!e);
+    return errors.length > 0 ? [
+      Object.assign(new ValidationError(),
+        {
+          property: 'activities',
+          target: phase,
+          value: phase.activities,
+          children: errors
+        } as ValidationError)
+    ] : [];
   }
 }

@@ -9,10 +9,3 @@ export type ValidationResult<T> =
 export interface ObjectValidator<T> {
   validate(object: unknown): Promise<ValidationResult<T>>;
 }
-
-export interface ObjectValidatorConstructor<T> {
-  new (
-    collection: CollectionReference<T>,
-    objectClass: ClassConstructor<T>,
-  ): ObjectValidator<T>;
-}

@@ -6,16 +6,16 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { IUser, UserRole } from '@tm/types/models/datamodels';
 import { CrudService } from '//services/crud/crud.service';
-import { ROOT_DOC } from '//config/constants';
+import { USERS } from '//config/constants';
 import { User, UserValidator } from '//dtos/user';
 
 @Injectable()
 export class UserService extends CrudService<IUser> {
-  constructor(@Inject(ROOT_DOC) root: DocumentReference) {
+  constructor(@Inject(USERS) users: CollectionReference<User>, validator: UserValidator) {
     super(
-      root.collection('user') as CollectionReference<IUser>,
+      users,
       User,
-      UserValidator,
+      validator,
     );
   }
 

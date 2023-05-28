@@ -1,23 +1,21 @@
 import {
-  CollectionReference,
   DocumentReference,
   Firestore,
 } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IActivity } from '@tm/types/models/datamodels';
 import { ActivityService } from './activity.service';
-import { ROOT_DOC } from '//config/constants';
 import { closeFirestore, initFirestore } from '//test/test-base';
+import { ActivityValidator } from '//dtos/activity';
+import { Provider } from '@nestjs/common';
 
 describe('ActivityService', () => {
   let db: Firestore;
   let root: DocumentReference;
   let service: ActivityService;
-  let collection: CollectionReference<IActivity>;
+  let providers: Provider[];
 
   beforeAll(async () => {
-    ({ db, root } = await initFirestore());
-    collection = root.collection('activity') as CollectionReference<IActivity>;
+    ({ db, root, providers } = await initFirestore());
   });
 
   afterAll(async () => {
@@ -26,14 +24,15 @@ describe('ActivityService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ActivityService, { provide: ROOT_DOC, useValue: root }],
+      providers: [
+        ActivityService,
+        ActivityValidator,
+        ...providers
+      ],
     }).compile();
 
     service = module.get<ActivityService>(ActivityService);
-  });
-
-  afterEach(async () => {
-    await db.recursiveDelete(collection);
+    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {
