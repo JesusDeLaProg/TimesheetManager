@@ -140,13 +140,16 @@ export class CrudService<T extends { _id?: StringId }> {
 
   async update(
     user: User,
-    id: string,
     object: any,
   ): Promise<MutationResult<T>> {
     const validationResult = await this.validate(object);
     if (!validationResult.__success) {
       return validationResult;
     } else {
+      const id = object._id;
+      if (!id) {
+        throw new Status(400, 'id manquant');
+      }
       const originalDocument = await this.getById(user, id);
       const updatedDocument = plainToInstance(this.objectClass, object);
       if (await this.authorizeUpdate(user, originalDocument, updatedDocument)) {

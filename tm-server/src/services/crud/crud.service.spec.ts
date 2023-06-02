@@ -213,7 +213,8 @@ describe('CrudService', () => {
 
   it('update(valid) should return updated doc', async () => {
     const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
-    expect(await service.update(dummyUser, docs[0].id, { data: 10 })).toEqual({
+    
+    expect(await service.update(dummyUser, { _id: docs[0].id, data: 10 })).toEqual({
       _id: docs[0].id,
       data: 10,
       __success: true,
@@ -223,7 +224,7 @@ describe('CrudService', () => {
   it('update(invalid) should return validation errors', async () => {
     const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
     expect(
-      await service.update(dummyUser, docs[0].id, { data: 'test' }),
+      await service.update(dummyUser, { _id: docs[0].id, data: 'test' }),
     ).toMatchObject({
       __success: false,
       errors: [
