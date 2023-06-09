@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
 import { closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
-import { USERS } from '//config/constants';
 import { UserValidator } from '//dtos/user';
 import { Provider } from '@nestjs/common';
 
@@ -23,11 +22,7 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UserService,
-        UserValidator,
-        ...providers
-      ],
+      providers: [UserService, UserValidator, ...providers],
     }).compile();
 
     service = module.get<UserService>(UserService);

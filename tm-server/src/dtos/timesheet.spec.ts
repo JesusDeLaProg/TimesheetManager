@@ -1,14 +1,11 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
 import {
   CollectionReference,
-  DocumentData,
   DocumentReference,
   Firestore,
-  QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
 import { ITimesheet, ProjectType, UserRole } from '@tm/types/models/datamodels';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { ValidationResult } from '../types/validator';
+import { ValidationResult } from '//types/validator';
 import { Timesheet, TimesheetValidator } from './timesheet';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Provider } from '@nestjs/common';
@@ -16,7 +13,7 @@ import { User } from './user';
 import { Project } from './project';
 import { Phase } from './phase';
 import { Activity } from './activity';
-import { ACTIVITIES, PHASES, PROJECTS, USERS } from '../config/constants';
+import { ACTIVITIES, PHASES, PROJECTS, USERS } from '//config/constants';
 
 const VALID_INPUT_TIMESHEET: ITimesheet = {
   _id: '1',
@@ -126,10 +123,7 @@ describe('TimesheetDTO', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TimesheetValidator,
-        ...providers
-      ],
+      providers: [TimesheetValidator, ...providers],
     }).compile();
 
     validator = module.get<TimesheetValidator>(TimesheetValidator);
@@ -142,11 +136,26 @@ describe('TimesheetDTO', () => {
 
   it('is valid', async () => {
     await Promise.all([
-      users.doc('2').set({ username: 'admin', firstName: '', lastName: '', billingGroups: [], email: '', isActive: true, password: '', role: UserRole.ADMIN }),
-      projects.doc('3').set({ client: 'Client 1', code: '23-01', name: '', isActive: true, type: ProjectType.PRIVE }),
+      users.doc('2').set({
+        username: 'admin',
+        firstName: '',
+        lastName: '',
+        billingGroups: [],
+        email: '',
+        isActive: true,
+        password: '',
+        role: UserRole.ADMIN,
+      }),
+      projects.doc('3').set({
+        client: 'Client 1',
+        code: '23-01',
+        name: '',
+        isActive: true,
+        type: ProjectType.PRIVE,
+      }),
       phases.doc('4').set({ code: 'AB', name: '', activities: ['5'] }),
-      activities.doc('5').set({ code: 'BD', name: '' })
-    ])
+      activities.doc('5').set({ code: 'BD', name: '' }),
+    ]);
     await expect(validator.validate(VALID_INPUT_TIMESHEET)).resolves.toEqual<
       ValidationResult<Timesheet>
     >({
@@ -441,34 +450,50 @@ describe('TimesheetDTO', () => {
   });
 
   it('contains invalid foreign keys', async () => {
-    await expect(validator.validate(VALID_INPUT_TIMESHEET)).resolves.toMatchObject<ValidationResult<Timesheet>>({
+    await expect(
+      validator.validate(VALID_INPUT_TIMESHEET),
+    ).resolves.toMatchObject<ValidationResult<Timesheet>>({
       __success: false,
       errors: [
         {
           property: 'user',
-          constraints: { isForeignKey: 'user doit faire référence à un objet existant dans la collection user' }
+          constraints: {
+            isForeignKey:
+              'user doit faire référence à un objet existant dans la collection user',
+          },
         },
         {
           property: 'lines',
-          children: [{
-            property: '0',
-            children: [
-              {
-                property: 'project',
-                constraints: { isForeignKey: 'project doit faire référence à un objet existant dans la collection project' }
-              },
-              {
-                property: 'phase',
-                constraints: { isForeignKey: 'phase doit faire référence à un objet existant dans la collection phase' }
-              },
-              {
-                property: 'activity',
-                constraints: { isForeignKey: 'activity doit faire référence à un objet existant dans la collection activity' }
-              }
-            ]
-          }]
-        }
-      ]
+          children: [
+            {
+              property: '0',
+              children: [
+                {
+                  property: 'project',
+                  constraints: {
+                    isForeignKey:
+                      'project doit faire référence à un objet existant dans la collection project',
+                  },
+                },
+                {
+                  property: 'phase',
+                  constraints: {
+                    isForeignKey:
+                      'phase doit faire référence à un objet existant dans la collection phase',
+                  },
+                },
+                {
+                  property: 'activity',
+                  constraints: {
+                    isForeignKey:
+                      'activity doit faire référence à un objet existant dans la collection activity',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
-  })
+  });
 });

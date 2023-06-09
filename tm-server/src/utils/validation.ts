@@ -2,7 +2,7 @@ import { CollectionReference, Query, Timestamp } from '@google-cloud/firestore';
 import { StringId } from '@tm/types/models/datamodels';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
-import { ObjectValidator, ValidationResult } from '../types/validator';
+import { ObjectValidator, ValidationResult } from '//types/validator';
 import { DateTime } from 'luxon';
 
 export interface UniquenessValidationOptions<T> {
@@ -101,12 +101,24 @@ export class BaseObjectValidator<T extends { _id?: StringId }>
     return errors;
   }
 
-  protected async validateForeignKey(object: any, property: string, key: StringId, collection: CollectionReference, propertyMessage?: string): Promise<ValidationError | null> {
+  protected async validateForeignKey(
+    object: any,
+    property: string,
+    key: StringId,
+    collection: CollectionReference,
+    propertyMessage?: string,
+  ): Promise<ValidationError | null> {
     const error = Object.assign(new ValidationError(), {
       property,
       target: object,
       value: key,
-      constraints: { isForeignKey: `${propertyMessage ?? property} doit faire référence à un objet existant dans la collection ${collection.id}` }
+      constraints: {
+        isForeignKey: `${
+          propertyMessage ?? property
+        } doit faire référence à un objet existant dans la collection ${
+          collection.id
+        }`,
+      },
     } as ValidationError);
     if (!key) return error;
 

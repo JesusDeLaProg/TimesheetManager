@@ -4,7 +4,7 @@ import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
 import { Inject, Injectable } from '@nestjs/common';
-import { ACTIVITIES } from '../config/constants';
+import { ACTIVITIES } from '//config/constants';
 
 export class Activity implements IActivity {
   @IsString({ message: ValidationMessages.IsString })

@@ -1,10 +1,25 @@
 import 'reflect-metadata';
-import { CollectionReference, DocumentData, Firestore, QueryDocumentSnapshot } from '@google-cloud/firestore';
+import {
+  CollectionReference,
+  DocumentData,
+  Firestore,
+  QueryDocumentSnapshot,
+} from '@google-cloud/firestore';
 import { StringId, UserRole } from '@tm/types/models/datamodels';
 import { User } from '//dtos/user';
 import { v4 as uuidv4 } from 'uuid';
-import { ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS } from '//config/constants';
-import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
+import {
+  ACTIVITIES,
+  PHASES,
+  PROJECTS,
+  TIMESHEETS,
+  USERS,
+} from '//config/constants';
+import {
+  ClassConstructor,
+  instanceToPlain,
+  plainToInstance,
+} from 'class-transformer';
 import { Activity } from '//dtos/activity';
 import { Phase } from '//dtos/phase';
 import { Project } from '//dtos/project';
@@ -37,7 +52,9 @@ export function addDocumentsToCollection(
   );
 }
 
-export function documentConverter<T extends { _id?: StringId }>(objectClass: ClassConstructor<T>) {
+export function documentConverter<T extends { _id?: StringId }>(
+  objectClass: ClassConstructor<T>,
+) {
   return {
     toFirestore(classObj: T): DocumentData {
       return instanceToPlain(classObj, { excludePrefixes: ['_'] });
@@ -59,12 +76,35 @@ export async function initFirestore() {
   const root = db.collection('timesheet-manager').doc(`test_${uuid}`);
   await db.recursiveDelete(root);
   const providers = [
-    { provide: ACTIVITIES, useValue: root.collection('activity').withConverter(documentConverter(Activity)) },
-    { provide: PHASES, useValue: root.collection('phase').withConverter(documentConverter(Phase)) },
-    { provide: PROJECTS, useValue: root.collection('project').withConverter(documentConverter(Project)) },
-    { provide: TIMESHEETS, useValue: root.collection('timesheet').withConverter(documentConverter(Timesheet)) },
-    { provide: USERS, useValue: root.collection('user').withConverter(documentConverter(User)) },
-  ]
+    {
+      provide: ACTIVITIES,
+      useValue: root
+        .collection('activity')
+        .withConverter(documentConverter(Activity)),
+    },
+    {
+      provide: PHASES,
+      useValue: root
+        .collection('phase')
+        .withConverter(documentConverter(Phase)),
+    },
+    {
+      provide: PROJECTS,
+      useValue: root
+        .collection('project')
+        .withConverter(documentConverter(Project)),
+    },
+    {
+      provide: TIMESHEETS,
+      useValue: root
+        .collection('timesheet')
+        .withConverter(documentConverter(Timesheet)),
+    },
+    {
+      provide: USERS,
+      useValue: root.collection('user').withConverter(documentConverter(User)),
+    },
+  ];
   return { db, root, providers };
 }
 

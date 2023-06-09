@@ -1,7 +1,4 @@
-import {
-  CollectionReference,
-  Query,
-} from '@google-cloud/firestore';
+import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IProject, UserRole } from '@tm/types/models/datamodels';
 import { PROJECTS } from '//config/constants';
@@ -13,12 +10,11 @@ import { AuthorizationUtils } from '//utils/authorization';
 
 @Injectable()
 export class ProjectService extends CrudService<IProject> {
-  constructor(@Inject(PROJECTS) projects: CollectionReference<Project>, validator: ProjectValidator) {
-    super(
-      projects,
-      Project,
-      validator,
-    );
+  constructor(
+    @Inject(PROJECTS) projects: CollectionReference<Project>,
+    validator: ProjectValidator,
+  ) {
+    super(projects, Project, validator);
   }
 
   protected async authorizeRead(

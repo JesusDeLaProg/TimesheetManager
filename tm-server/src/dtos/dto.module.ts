@@ -6,12 +6,12 @@ import { TimesheetValidator } from './timesheet';
 import { UserValidator } from './user';
 
 @Module({
-    providers: [
-        ActivityValidator,
-        PhaseValidator,
-        ProjectValidator,
-        TimesheetValidator,
-        UserValidator
-    ]
+  providers: [
+    ActivityValidator,
+    PhaseValidator,
+    ProjectValidator,
+    TimesheetValidator,
+    UserValidator,
+  ],
 })
 export class DtoModule {}

@@ -4,12 +4,12 @@ import {
   DocumentReference,
   Firestore,
 } from '@google-cloud/firestore';
-import { ValidationResult } from '../types/validator';
+import { ValidationResult } from '//types/validator';
 import { Phase, PhaseValidator } from './phase';
 import { Provider } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Activity } from './activity';
-import { ACTIVITIES } from '../config/constants';
+import { ACTIVITIES } from '//config/constants';
 
 describe('PhaseDTO', () => {
   let db: Firestore;
@@ -28,10 +28,7 @@ describe('PhaseDTO', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PhaseValidator,
-        ...providers
-      ],
+      providers: [PhaseValidator, ...providers],
     }).compile();
 
     validator = module.get<PhaseValidator>(PhaseValidator);
@@ -77,15 +74,21 @@ describe('PhaseDTO', () => {
           children: [
             {
               property: '0',
-              constraints: { isForeignKey: 'activities doit faire référence à un objet existant dans la collection activity' }
+              constraints: {
+                isForeignKey:
+                  'activities doit faire référence à un objet existant dans la collection activity',
+              },
             },
             {
               property: '1',
-              constraints: { isForeignKey: 'activities doit faire référence à un objet existant dans la collection activity' }
+              constraints: {
+                isForeignKey:
+                  'activities doit faire référence à un objet existant dans la collection activity',
+              },
             },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     });
   });
 

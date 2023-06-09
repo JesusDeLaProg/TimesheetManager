@@ -32,12 +32,17 @@ import { DateTime, Interval } from 'luxon';
 import { BaseObjectValidator, normalizeDate } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
 import { Inject, Injectable } from '@nestjs/common';
-import { ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS } from '../config/constants';
+import {
+  ACTIVITIES,
+  PHASES,
+  PROJECTS,
+  TIMESHEETS,
+  USERS,
+} from '//config/constants';
 import { User } from './user';
 import { Project } from './project';
 import { Phase } from './phase';
 import { Activity } from './activity';
-import { DocumentSnapshot } from '@google-cloud/firestore';
 
 @ValidatorConstraint({ name: 'dayOfWeek', async: false })
 class DayOfWeekValidator implements ValidatorConstraintInterface {
@@ -302,13 +307,14 @@ export class TimesheetValidator extends BaseObjectValidator<Timesheet> {
     @Inject(USERS) private users: CollectionReference<User>,
     @Inject(PROJECTS) private projects: CollectionReference<Project>,
     @Inject(PHASES) private phases: CollectionReference<Phase>,
-    @Inject(ACTIVITIES) private activities: CollectionReference<Activity>
+    @Inject(ACTIVITIES) private activities: CollectionReference<Activity>,
   ) {
     super(timesheets, Timesheet);
     this.VALIDATORS.push(
       (obj) => this.validateNonOverlapping(obj),
       (obj) => this.validateForeignKeys(obj),
-      (obj) => this.validateActivitiesInPhase(obj));
+      (obj) => this.validateActivitiesInPhase(obj),
+    );
   }
 
   protected normalize(timesheet: Timesheet): void {
@@ -396,51 +402,83 @@ export class TimesheetValidator extends BaseObjectValidator<Timesheet> {
             property: 'lines',
             target: timesheet,
             value: timesheet.lines,
-            children: (await Promise.all(timesheet.lines.map(async (l, i) => 
-              Object.assign(new ValidationError(), {
-                property: String(i),
-                target: timesheet.lines,
-                value: l,
-                children: (await Promise.all([
-                  this.validateForeignKey(timesheet, 'project', timesheet.lines[i].project, this.projects),
-                  this.validateForeignKey(timesheet, 'phase', timesheet.lines[i].phase, this.phases),
-                  this.validateForeignKey(timesheet, 'activity', timesheet.lines[i].activity, this.activities),
-                ])).filter(e => !!e)
-              } as ValidationError)))).filter(l => l.children.length > 0)
+            children: (
+              await Promise.all(
+                timesheet.lines.map(async (l, i) =>
+                  Object.assign(new ValidationError(), {
+                    property: String(i),
+                    target: timesheet.lines,
+                    value: l,
+                    children: (
+                      await Promise.all([
+                        this.validateForeignKey(
+                          timesheet,
+                          'project',
+                          timesheet.lines[i].project,
+                          this.projects,
+                        ),
+                        this.validateForeignKey(
+                          timesheet,
+                          'phase',
+                          timesheet.lines[i].phase,
+                          this.phases,
+                        ),
+                        this.validateForeignKey(
+                          timesheet,
+                          'activity',
+                          timesheet.lines[i].activity,
+                          this.activities,
+                        ),
+                      ])
+                    ).filter((e) => !!e),
+                  } as ValidationError),
+                ),
+              )
+            ).filter((l) => l.children.length > 0),
           } as ValidationError);
           resolve(linesError.children.length > 0 ? linesError : null);
         } catch (e) {
           reject(e);
         }
-        ;})
+      }),
     ];
-    return (await Promise.all(errors)).filter(e => !!e);
+    return (await Promise.all(errors)).filter((e) => !!e);
   }
 
-  async validateActivitiesInPhase(timesheet: Timesheet): Promise<ValidationError[]> {
+  async validateActivitiesInPhase(
+    timesheet: Timesheet,
+  ): Promise<ValidationError[]> {
     const error = Object.assign(new ValidationError(), {
       property: 'lines',
       target: timesheet,
       value: timesheet.lines,
-      children: (await Promise.all(timesheet.lines.map(async (l, i) => {
-        const phase = (await this.phases.doc(l.phase).get()).data();
-        if (phase.activities.includes(l.activity)) {
-          return null;
-        } else {
-          return Object.assign(new ValidationError(), {
-            property: String(i),
-            target: timesheet.lines,
-            value: l,
-            children: [Object.assign(new ValidationError(), {
-              property: 'activity',
-              target: l,
-              value: l.activity,
-              constraints: { activityAllowedWithPhase: `${l.activity} doit être une activité permise pendant la phase ${phase.code}` }
-            } as ValidationError)]
-          } as ValidationError);
-        }
-      }))).filter(e => e?.children.length > 0)
-    } as ValidationError)
+      children: (
+        await Promise.all(
+          timesheet.lines.map(async (l, i) => {
+            const phase = (await this.phases.doc(l.phase).get()).data();
+            if (phase.activities.includes(l.activity)) {
+              return null;
+            } else {
+              return Object.assign(new ValidationError(), {
+                property: String(i),
+                target: timesheet.lines,
+                value: l,
+                children: [
+                  Object.assign(new ValidationError(), {
+                    property: 'activity',
+                    target: l,
+                    value: l.activity,
+                    constraints: {
+                      activityAllowedWithPhase: `${l.activity} doit être une activité permise pendant la phase ${phase.code}`,
+                    },
+                  } as ValidationError),
+                ],
+              } as ValidationError);
+            }
+          }),
+        )
+      ).filter((e) => e?.children.length > 0),
+    } as ValidationError);
     return error.children.length > 0 ? [error] : [];
   }
 }

@@ -1,10 +1,7 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
-import {
-  DocumentReference,
-  Firestore,
-} from '@google-cloud/firestore';
+import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { ProjectType } from '@tm/types/models/datamodels';
-import { ValidationResult } from '../types/validator';
+import { ValidationResult } from '//types/validator';
 import { Project, ProjectValidator } from './project';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Provider } from '@nestjs/common';
@@ -25,10 +22,7 @@ describe('ProjectDTO', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ProjectValidator,
-        ...providers
-      ],
+      providers: [ProjectValidator, ...providers],
     }).compile();
 
     validator = module.get<ProjectValidator>(ProjectValidator);

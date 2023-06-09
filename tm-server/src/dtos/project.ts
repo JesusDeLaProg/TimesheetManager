@@ -11,7 +11,7 @@ import {
 import { BaseObjectValidator } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
 import { Inject, Injectable } from '@nestjs/common';
-import { PROJECTS } from '../config/constants';
+import { PROJECTS } from '//config/constants';
 
 export class Project implements IProject {
   @IsString({ message: ValidationMessages.IsString })

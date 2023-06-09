@@ -4,11 +4,19 @@ import {
   Firestore,
 } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IActivity, IPhase, IProject, ITimesheet, IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
+import {
+  IActivity,
+  IPhase,
+  IProject,
+  ITimesheet,
+  IUser,
+  ProjectType,
+  UserRole,
+} from '@tm/types/models/datamodels';
 import { DateTime } from 'luxon';
 import { TimesheetService } from './timesheet.service';
 import { closeFirestore, initFirestore } from '//test/test-base';
-import { ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS } from '//config/constants';
+import { ACTIVITIES, PHASES, PROJECTS, USERS } from '//config/constants';
 import { TimesheetValidator } from '//dtos/timesheet';
 import { Provider } from '@nestjs/common';
 
@@ -56,11 +64,7 @@ describe('TimesheetService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TimesheetService,
-        TimesheetValidator,
-        ...providers
-      ],
+      providers: [TimesheetService, TimesheetValidator, ...providers],
     }).compile();
 
     service = module.get<TimesheetService>(TimesheetService);
@@ -71,26 +75,23 @@ describe('TimesheetService', () => {
 
     await db.runTransaction(async (transaction) => {
       transaction
-      .set(
-        Users.doc(subadminUser._id),
-        Object.assign({ _id: undefined }, subadminUser),
-      )
-      .set(
-        Users.doc(adminUser._id),
-        Object.assign({ _id: undefined }, adminUser),
-      )
-      .set(
-        Projects.doc('2'),
-        { client: 'Client 1', code: '23-01', name: 'Proj 1', isActive: true, type: ProjectType.PUBLIC },
-      )
-      .set(
-        Phases.doc('3'),
-        { code: 'AD', name: 'Admin', activities: ['4'] },
-      )
-      .set(
-        Activities.doc('4'),
-        { code: 'GE', name: 'General' },
-      );
+        .set(
+          Users.doc(subadminUser._id),
+          Object.assign({ _id: undefined }, subadminUser),
+        )
+        .set(
+          Users.doc(adminUser._id),
+          Object.assign({ _id: undefined }, adminUser),
+        )
+        .set(Projects.doc('2'), {
+          client: 'Client 1',
+          code: '23-01',
+          name: 'Proj 1',
+          isActive: true,
+          type: ProjectType.PUBLIC,
+        })
+        .set(Phases.doc('3'), { code: 'AD', name: 'Admin', activities: ['4'] })
+        .set(Activities.doc('4'), { code: 'GE', name: 'General' });
     });
   });
 

@@ -32,7 +32,7 @@ import { DateTime, Interval } from 'luxon';
 import { BaseObjectValidator, normalizeDate } from '//utils/validation';
 import * as ValidationMessages from '//i18n/validation.json';
 import { Inject, Injectable } from '@nestjs/common';
-import { USERS } from '../config/constants';
+import { USERS } from '//config/constants';
 
 @ValidatorConstraint({ name: 'timelineCompleteness', async: false })
 class TimelineCompletenessValidator implements ValidatorConstraintInterface {

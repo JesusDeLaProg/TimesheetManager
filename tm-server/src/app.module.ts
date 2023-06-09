@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { AppController } from '//app.controller';
 import { AppService } from '//app.service';
 import { CrudService } from '//services/crud/crud.service';
@@ -12,14 +13,38 @@ import { Settings } from 'luxon';
 import { AuthService } from './services/auth/auth.service';
 import { DtoModule } from './dtos/dto.module';
 import { DbModule } from './config/db.module';
+import { JwtStrategy } from './passport/jwt.strategy';
+import { LocalStrategy } from './passport/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { readFileSync } from 'fs';
+import { PUBLIC_KEY } from './config/constants';
+import { env } from 'process';
 
 Settings.defaultLocale = 'fr-CA';
 Settings.defaultZone = 'America/New_York';
 
+const privateKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/private_key');
+const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
+
 @Module({
-  imports: [DtoModule, DbModule],
+  imports: [
+    DtoModule,
+    DbModule,
+    JwtModule.register({
+      privateKey,
+      publicKey,
+      signOptions: {
+        expiresIn: '1h',
+        algorithm: 'ES256',
+        issuer: 'Cloud Timesheet-Manager',
+        mutatePayload: true,
+      },
+    }),
+    PassportModule,
+  ],
   controllers: [AppController, UserController],
   providers: [
+    { provide: PUBLIC_KEY, useValue: publicKey },
     AppService,
     CrudService,
     UserService,
@@ -28,6 +53,8 @@ Settings.defaultZone = 'America/New_York';
     PhaseService,
     TimesheetService,
     AuthService,
+    JwtStrategy,
+    LocalStrategy,
   ],
 })
 export class AppModule {}

@@ -1,24 +1,21 @@
-import {
-  CollectionReference,
-  DocumentReference,
-  Query,
-} from '@google-cloud/firestore';
+import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserRole } from '@tm/types/models/datamodels';
 import { CrudService, MutationResult } from '//services/crud/crud.service';
 import { USERS } from '//config/constants';
 import { User, UserValidator } from '//dtos/user';
 import { QueryOptions } from '//dtos/query_options';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '//services/auth/auth.service';
+import { AuthorizationUtils } from '//utils/authorization';
 
 @Injectable()
 export class UserService extends CrudService<User> {
-  constructor(@Inject(USERS) users: CollectionReference<User>, validator: UserValidator, private authService: AuthService) {
-    super(
-      users,
-      User,
-      validator,
-    );
+  constructor(
+    @Inject(USERS) users: CollectionReference<User>,
+    validator: UserValidator,
+    private authService: AuthService,
+  ) {
+    super(users, User, validator);
   }
 
   protected async authorizeRead(
@@ -33,32 +30,11 @@ export class UserService extends CrudService<User> {
     user: User,
     originalDocumentOrQuery: User | Query<User>,
   ): Promise<boolean | Query<User> | null> {
-    if (originalDocumentOrQuery instanceof Query) {
-      switch (user.role) {
-        case UserRole.USER:
-          return originalDocumentOrQuery.where('username', '==', user.username);
-        case UserRole.SUBADMIN:
-        case UserRole.ADMIN:
-        case UserRole.SUPERADMIN:
-          return originalDocumentOrQuery;
-        default:
-          return null;
-      }
-    } else {
-      switch (user.role) {
-        case UserRole.USER:
-          return (
-            !!originalDocumentOrQuery &&
-            originalDocumentOrQuery._id === user._id
-          );
-        case UserRole.SUBADMIN:
-        case UserRole.ADMIN:
-        case UserRole.SUPERADMIN:
-          return !!originalDocumentOrQuery;
-        default:
-          return false;
-      }
-    }
+    return AuthorizationUtils.authorizeReadForRoleAtLeast(
+      user,
+      UserRole.SUBADMIN,
+      originalDocumentOrQuery,
+    );
   }
 
   protected async authorizeCreate(
@@ -107,7 +83,10 @@ export class UserService extends CrudService<User> {
 
   async get(user: User, queryOptions?: QueryOptions): Promise<User[]> {
     const ret = await super.get(user, queryOptions);
-    return ret.map(u => { delete u.password; return u; });
+    return ret.map((u) => {
+      delete u.password;
+      return u;
+    });
   }
 
   async create(user: User, object: any): Promise<MutationResult<User>> {

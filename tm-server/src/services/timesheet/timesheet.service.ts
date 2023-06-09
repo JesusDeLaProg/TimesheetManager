@@ -1,22 +1,19 @@
-import {
-  CollectionReference,
-  Query,
-} from '@google-cloud/firestore';
+import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { ITimesheet, UserRole } from '@tm/types/models/datamodels';
-import { CrudService } from '../crud/crud.service';
+import { CrudService } from '//services/crud/crud.service';
 import { TIMESHEETS, USERS } from '//config/constants';
 import { Timesheet, TimesheetValidator } from '//dtos/timesheet';
 import { User } from '//dtos/user';
 
 @Injectable()
 export class TimesheetService extends CrudService<ITimesheet> {
-  constructor(@Inject(TIMESHEETS) timesheets: CollectionReference<Timesheet>, @Inject(USERS) private users: CollectionReference<User>, validator: TimesheetValidator) {
-    super(
-      timesheets,
-      Timesheet,
-      validator,
-    );
+  constructor(
+    @Inject(TIMESHEETS) timesheets: CollectionReference<Timesheet>,
+    @Inject(USERS) private users: CollectionReference<User>,
+    validator: TimesheetValidator,
+  ) {
+    super(timesheets, Timesheet, validator);
   }
 
   protected async authorizeRead(

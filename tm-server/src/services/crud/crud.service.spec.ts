@@ -90,7 +90,9 @@ describe('CrudService', () => {
 
   beforeAll(async () => {
     ({ db, root } = await initFirestore());
-    collection = (root.collection('base')).withConverter(documentConverter(Data)) as CollectionReference<Data>;
+    collection = root
+      .collection('base')
+      .withConverter(documentConverter(Data)) as CollectionReference<Data>;
   });
 
   afterAll(async () => {
@@ -213,8 +215,10 @@ describe('CrudService', () => {
 
   it('update(valid) should return updated doc', async () => {
     const docs = await addDocumentsToCollection(collection, [{ data: 1 }]);
-    
-    expect(await service.update(dummyUser, { _id: docs[0].id, data: 10 })).toEqual({
+
+    expect(
+      await service.update(dummyUser, { _id: docs[0].id, data: 10 }),
+    ).toEqual({
       _id: docs[0].id,
       data: 10,
       __success: true,

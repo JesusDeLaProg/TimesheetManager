@@ -1,23 +1,13 @@
-import {
-  CollectionReference,
-  Query,
-} from '@google-cloud/firestore';
+import { CollectionReference, Query } from '@google-cloud/firestore';
 import { StringId } from '@tm/types/models/datamodels';
-import {
-  ClassConstructor,
-  plainToInstance,
-} from 'class-transformer';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
-import { Status } from '//types/status';
-import {
-  ObjectValidator,
-  ValidationResult,
-} from '//types/validator';
+import { ObjectValidator, ValidationResult } from '//types/validator';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 export type MutationResult<T> = ValidationResult<T>;
 export class CrudService<T extends { _id?: StringId }> {
-
   constructor(
     private collection: CollectionReference<T>,
     private objectClass: ClassConstructor<T>,
@@ -86,14 +76,13 @@ export class CrudService<T extends { _id?: StringId }> {
     if (await this.authorizeRead(user, result)) {
       return result || null;
     }
-    throw new Status(403, `Lecture refusée sur document ${id}`);
+    throw new ForbiddenException(`Lecture refusée sur document ${id}`);
   }
 
   async get(user: User, queryOptions?: QueryOptions): Promise<T[]> {
     const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
-      throw new Status(
-        403,
+      throw new ForbiddenException(
         `Lecture refusée sur ressource ${this.collection.path}`,
       );
     return (
@@ -104,8 +93,7 @@ export class CrudService<T extends { _id?: StringId }> {
   async count(user: User): Promise<number> {
     const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
-      throw new Status(
-        403,
+      throw new ForbiddenException(
         `Lecture refusée sur ressource ${this.collection.path}`,
       );
     return (await prefilteredQuery.select().get()).size;
@@ -130,25 +118,21 @@ export class CrudService<T extends { _id?: StringId }> {
           ).data(),
         );
       } else {
-        throw new Status(
-          403,
+        throw new ForbiddenException(
           `Création refusée sur ressource ${this.collection.path}`,
         );
       }
     }
   }
 
-  async update(
-    user: User,
-    object: any,
-  ): Promise<MutationResult<T>> {
+  async update(user: User, object: any): Promise<MutationResult<T>> {
     const validationResult = await this.validate(object);
     if (!validationResult.__success) {
       return validationResult;
     } else {
       const id = object._id;
       if (!id) {
-        throw new Status(400, 'id manquant');
+        throw new BadRequestException('id manquant');
       }
       const originalDocument = await this.getById(user, id);
       const updatedDocument = plainToInstance(this.objectClass, object);
@@ -160,7 +144,7 @@ export class CrudService<T extends { _id?: StringId }> {
           (await docRef.get()).data(),
         );
       } else {
-        throw new Status(403, `Mise à jour refusée sur document ${id}`);
+        throw new ForbiddenException(`Mise à jour refusée sur document ${id}`);
       }
     }
   }
@@ -171,7 +155,7 @@ export class CrudService<T extends { _id?: StringId }> {
       await this.collection.doc(id).delete();
       return true;
     }
-    throw new Status(403, `Suppression refusée sur document ${id}`);
+    throw new ForbiddenException(`Suppression refusée sur document ${id}`);
   }
 
   async searchByField(
@@ -182,8 +166,7 @@ export class CrudService<T extends { _id?: StringId }> {
   ): Promise<T[]> {
     const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
-      throw new Status(
-        403,
+      throw new ForbiddenException(
         `Lecture refusée sur ressource ${this.collection.path}`,
       );
     return (
@@ -202,8 +185,7 @@ export class CrudService<T extends { _id?: StringId }> {
   ): Promise<T[]> {
     const prefilteredQuery = await this.authorizeRead(user, this.collection);
     if (!prefilteredQuery)
-      throw new Status(
-        403,
+      throw new ForbiddenException(
         `Lecture refusée sur ressource ${this.collection.path}`,
       );
     return (

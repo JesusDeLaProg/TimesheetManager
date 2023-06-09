@@ -1,9 +1,6 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
-import {
-  DocumentReference,
-  Firestore,
-} from '@google-cloud/firestore';
-import { ValidationResult } from '../types/validator';
+import { DocumentReference, Firestore } from '@google-cloud/firestore';
+import { ValidationResult } from '//types/validator';
 import { Activity, ActivityValidator } from './activity';
 import { Provider } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -24,10 +21,7 @@ describe('ActivityDTO', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ActivityValidator,
-        ...providers
-      ],
+      providers: [ActivityValidator, ...providers],
     }).compile();
 
     validator = module.get<ActivityValidator>(ActivityValidator);

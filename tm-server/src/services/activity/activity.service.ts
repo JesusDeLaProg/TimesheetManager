@@ -1,7 +1,4 @@
-import {
-  CollectionReference,
-  Query,
-} from '@google-cloud/firestore';
+import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
 import { IActivity, UserRole } from '@tm/types/models/datamodels';
 import { Activity, ActivityValidator } from '//dtos/activity';
@@ -12,12 +9,11 @@ import { ACTIVITIES } from '//config/constants';
 
 @Injectable()
 export class ActivityService extends CrudService<IActivity> {
-  constructor(@Inject(ACTIVITIES) activities: CollectionReference<Activity>, validator: ActivityValidator) {
-    super(
-      activities,
-      Activity,
-      validator,
-    );
+  constructor(
+    @Inject(ACTIVITIES) activities: CollectionReference<Activity>,
+    validator: ActivityValidator,
+  ) {
+    super(activities, Activity, validator);
   }
 
   protected async authorizeRead(

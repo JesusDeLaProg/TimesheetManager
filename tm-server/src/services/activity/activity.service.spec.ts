@@ -1,7 +1,4 @@
-import {
-  DocumentReference,
-  Firestore,
-} from '@google-cloud/firestore';
+import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ActivityService } from './activity.service';
 import { closeFirestore, initFirestore } from '//test/test-base';
@@ -24,11 +21,7 @@ describe('ActivityService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ActivityService,
-        ActivityValidator,
-        ...providers
-      ],
+      providers: [ActivityService, ActivityValidator, ...providers],
     }).compile();
 
     service = module.get<ActivityService>(ActivityService);
