@@ -24,6 +24,7 @@ import { Activity } from '//dtos/activity';
 import { Phase } from '//dtos/phase';
 import { Project } from '//dtos/project';
 import { Timesheet } from '//dtos/timesheet';
+import { JwtModule } from '@nestjs/jwt';
 
 jest.setTimeout(120000);
 
@@ -117,3 +118,5 @@ export async function closeFirestore({
 }) {
   await db.recursiveDelete(root);
 }
+
+export const JwtModuleProvider = () => JwtModule.register({ secret: 'secret', signOptions: { algorithm: 'HS256', issuer: 'TEST', expiresIn: '1h', mutatePayload: true } });

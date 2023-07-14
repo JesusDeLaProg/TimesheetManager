@@ -19,7 +19,7 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<User> {
     const user = (
-      await this.Users.where('username', '==', username).limit(1).get()
+      await this.Users.where('username', '==', username).where('isActive', '==', true).limit(1).get()
     ).docs[0]?.data();
     if (!user || !user.password) {
       throw new BadRequestException('Utilisateur inexistant');
@@ -40,10 +40,11 @@ export class AuthService {
     });
   }
 
-  async generateJwt(user: User): Promise<string> {
-    return this.jwtService.signAsync({
+  async generateJwt(user: User): Promise<{payload: {name: string, sub: string}, token: string}> {
+    const payload = {
       name: `${user.firstName} ${user.lastName}`,
       sub: user._id,
-    });
+    };
+    return { payload, token: await this.jwtService.signAsync(payload) };
   }
 }

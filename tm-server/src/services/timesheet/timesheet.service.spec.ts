@@ -72,27 +72,25 @@ describe('TimesheetService', () => {
     Projects = module.get(PROJECTS);
     Phases = module.get(PHASES);
     Activities = module.get(ACTIVITIES);
-
-    await db.runTransaction(async (transaction) => {
-      transaction
-        .set(
-          Users.doc(subadminUser._id),
-          Object.assign({ _id: undefined }, subadminUser),
-        )
-        .set(
-          Users.doc(adminUser._id),
-          Object.assign({ _id: undefined }, adminUser),
-        )
-        .set(Projects.doc('2'), {
-          client: 'Client 1',
-          code: '23-01',
-          name: 'Proj 1',
-          isActive: true,
-          type: ProjectType.PUBLIC,
-        })
-        .set(Phases.doc('3'), { code: 'AD', name: 'Admin', activities: ['4'] })
-        .set(Activities.doc('4'), { code: 'GE', name: 'General' });
-    });
+    await db.batch()
+      .set(
+        Users.doc(subadminUser._id),
+        Object.assign({ _id: undefined }, subadminUser),
+      )
+      .set(
+        Users.doc(adminUser._id),
+        Object.assign({ _id: undefined }, adminUser),
+      )
+      .set(Projects.doc('2'), {
+        client: 'Client 1',
+        code: '23-01',
+        name: 'Proj 1',
+        isActive: true,
+        type: ProjectType.PUBLIC,
+      })
+      .set(Phases.doc('3'), { code: 'AD', name: 'Admin', activities: ['4'] })
+      .set(Activities.doc('4'), { code: 'GE', name: 'General' })
+      .commit();
   });
 
   afterEach(async () => {
@@ -134,8 +132,8 @@ describe('TimesheetService', () => {
       ],
       roadsheetLines: [],
     };
-    await expect(service.create(subadminUser, newTimesheet)).rejects.toEqual({
-      code: 403,
+    await expect(service.create(subadminUser, newTimesheet)).rejects.toMatchObject({
+      status: 403,
       message: expect.stringMatching(
         /Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/,
       ),

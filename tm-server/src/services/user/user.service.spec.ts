@@ -1,10 +1,11 @@
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
-import { closeFirestore, initFirestore, testUser } from '//test/test-base';
+import { JwtModuleProvider, closeFirestore, initFirestore, testUser } from '//test/test-base';
 import { UserService } from './user.service';
 import { UserValidator } from '//dtos/user';
 import { Provider } from '@nestjs/common';
+import { AuthService } from '../auth/auth.service';
 
 describe('UserService', () => {
   let db: Firestore;
@@ -22,7 +23,8 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, UserValidator, ...providers],
+      imports: [JwtModuleProvider()],
+      providers: [UserService, UserValidator, AuthService, ...providers],
     }).compile();
 
     service = module.get<UserService>(UserService);
