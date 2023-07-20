@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PUBLIC_KEY, USERS } from '//config/constants';
+import { PUBLIC_KEY, TM_AUTH_COOKIE, USERS } from '//config/constants';
 import { CollectionReference } from '@google-cloud/firestore';
 import { User } from '//dtos/user';
 
@@ -12,7 +12,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @Inject(PUBLIC_KEY) publicKey: string,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => req.cookies[TM_AUTH_COOKIE],
+      ]),
       ignoreExpiration: false,
       secretOrKey: publicKey,
       issuer: 'Cloud Timesheet-Manager',

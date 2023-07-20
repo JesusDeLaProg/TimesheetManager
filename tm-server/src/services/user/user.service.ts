@@ -93,7 +93,7 @@ export class UserService extends CrudService<User> {
     const ret = await super.create(user, object);
     if (ret.__success) {
       const newPass = ret.password;
-      await this.authService.changePassword(ret, newPass);
+      await this.authService.changePassword(user, ret, newPass);
       delete ret.password;
     }
     return ret;
@@ -104,7 +104,7 @@ export class UserService extends CrudService<User> {
     if (ret.__success) {
       if (ret.password) {
         const newPass = ret.password;
-        await this.authService.changePassword(ret, newPass);
+        await this.authService.changePassword(user, ret, newPass);
       }
       delete ret.password;
     }

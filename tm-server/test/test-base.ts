@@ -119,4 +119,13 @@ export async function closeFirestore({
   await db.recursiveDelete(root);
 }
 
-export const JwtModuleProvider = () => JwtModule.register({ secret: 'secret', signOptions: { algorithm: 'HS256', issuer: 'TEST', expiresIn: '1h', mutatePayload: true } });
+export const JwtModuleProvider = () =>
+  JwtModule.register({
+    secret: 'secret',
+    signOptions: {
+      algorithm: 'HS256',
+      issuer: 'TEST',
+      expiresIn: '1h',
+      mutatePayload: true,
+    },
+  });

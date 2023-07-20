@@ -129,10 +129,11 @@ class NoDateOutsideBounds implements ValidatorConstraintInterface {
       DateTime.fromJSDate((args.object as Timesheet).begin),
       DateTime.fromJSDate((args.object as Timesheet).end),
     );
-    return value?.every((line) =>
-      line.travels?.every((t) =>
-        interval.contains(DateTime.fromJSDate(t.date)),
-      ),
+    return value?.every(
+      (line) =>
+        line.travels?.every((t) =>
+          interval.contains(DateTime.fromJSDate(t.date)),
+        ),
     );
   }
   defaultMessage(args?: ValidationArguments): string {

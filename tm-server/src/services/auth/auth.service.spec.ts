@@ -1,7 +1,15 @@
-import { Firestore, DocumentReference, CollectionReference } from '@google-cloud/firestore';
+import {
+  Firestore,
+  DocumentReference,
+  CollectionReference,
+} from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { initFirestore, closeFirestore, JwtModuleProvider } from '//test/test-base';
+import {
+  initFirestore,
+  closeFirestore,
+  JwtModuleProvider,
+} from '//test/test-base';
 import { Provider } from '@nestjs/common';
 import { User } from '//dtos/user';
 import * as argon2 from 'argon2';
@@ -42,7 +50,16 @@ describe('AuthService', () => {
   });
 
   it('logs in a user', async () => {
-    await Users.doc('1').create({ firstName: 'Admin', lastName: 'Admin', username: 'admin', isActive: true, password: await argon2.hash('password'), role: UserRole.SUPERADMIN, billingGroups: [], email: 'admin@timesheetmanager.com' });
+    await Users.doc('1').create({
+      firstName: 'Admin',
+      lastName: 'Admin',
+      username: 'admin',
+      isActive: true,
+      password: await argon2.hash('password'),
+      role: UserRole.SUPERADMIN,
+      billingGroups: [],
+      email: 'admin@timesheetmanager.com',
+    });
     expect(await service.login('admin', 'password')).toEqual({
       _id: '1',
       username: 'admin',
@@ -51,7 +68,7 @@ describe('AuthService', () => {
       email: 'admin@timesheetmanager.com',
       role: UserRole.SUPERADMIN,
       billingGroups: [],
-      isActive: true
+      isActive: true,
     });
   });
 
@@ -64,22 +81,38 @@ describe('AuthService', () => {
       email: 'admin@timesheetmanager.com',
       password: 'password',
     });
-    const time = Date.now();
     const result = await service.generateJwt(user);
     expect(result.payload).toEqual({
-      iss: "TEST",
+      iss: 'TEST',
       iat: expect.any(Number),
       exp: expect.any(Number),
       name: 'Admin Admin',
-      sub: '1'
+      sub: '1',
     });
-    expect(await jwtService.decode(result.token)).toEqual(result.payload);
+    expect(jwtService.decode(result.token)).toEqual(result.payload);
   });
 
   it('changes password', async () => {
-    const user: IUser = { firstName: 'Admin', lastName: 'Admin', username: 'admin', isActive: true, password: await argon2.hash('password'), role: UserRole.SUPERADMIN, billingGroups: [], email: 'admin@timesheetmanager.com' };
+    const user: IUser = {
+      firstName: 'Admin',
+      lastName: 'Admin',
+      username: 'admin',
+      isActive: true,
+      password: await argon2.hash('password'),
+      role: UserRole.SUPERADMIN,
+      billingGroups: [],
+      email: 'admin@timesheetmanager.com',
+    };
     await Users.doc('1').create(user);
-    expect(await service.changePassword(Object.assign(new User(), { _id: '1', ...user }), 'newpassword')).toEqual(undefined);
-    expect(await argon2.verify((await Users.doc('1').get()).data().password, 'newpassword')).toBe(true);
+    const u = (await Users.doc('1').get()).data();
+    expect(await service.changePassword(u, u, 'newpassword')).toEqual(
+      undefined,
+    );
+    expect(
+      await argon2.verify(
+        (await Users.doc('1').get()).data().password,
+        'newpassword',
+      ),
+    ).toBe(true);
   });
 });

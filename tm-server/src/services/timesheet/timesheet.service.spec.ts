@@ -72,7 +72,8 @@ describe('TimesheetService', () => {
     Projects = module.get(PROJECTS);
     Phases = module.get(PHASES);
     Activities = module.get(ACTIVITIES);
-    await db.batch()
+    await db
+      .batch()
       .set(
         Users.doc(subadminUser._id),
         Object.assign({ _id: undefined }, subadminUser),
@@ -132,7 +133,9 @@ describe('TimesheetService', () => {
       ],
       roadsheetLines: [],
     };
-    await expect(service.create(subadminUser, newTimesheet)).rejects.toMatchObject({
+    await expect(
+      service.create(subadminUser, newTimesheet),
+    ).rejects.toMatchObject({
       status: 403,
       message: expect.stringMatching(
         /Création refusée sur ressource timesheet-manager\/test_[a-f0-9-]+\/timesheet/,

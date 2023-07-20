@@ -1,7 +1,12 @@
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
-import { JwtModuleProvider, closeFirestore, initFirestore, testUser } from '//test/test-base';
+import {
+  JwtModuleProvider,
+  closeFirestore,
+  initFirestore,
+  testUser,
+} from '//test/test-base';
 import { UserService } from './user.service';
 import { UserValidator } from '//dtos/user';
 import { Provider } from '@nestjs/common';

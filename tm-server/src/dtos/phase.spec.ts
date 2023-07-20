@@ -37,7 +37,8 @@ describe('PhaseDTO', () => {
   });
 
   it('is valid Phase', async () => {
-    await db.batch()
+    await db
+      .batch()
       .create(activities.doc('2'), { code: 'CD', name: 'Act 1' })
       .create(activities.doc('3'), { code: 'EF', name: 'Act 2' })
       .commit();
