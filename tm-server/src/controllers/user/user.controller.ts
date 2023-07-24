@@ -1,4 +1,4 @@
-import { Controller, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserService } from '//services/user/user.service';
 import { QueryOpts } from '//decorators/query_options.decorator';
 import { QueryOptions } from '//dtos/query_options';
@@ -9,10 +9,42 @@ import { User } from '//dtos/user';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @Get('list')
   async get(
     @AuthenticatedUser() user: User,
-    @QueryOpts() queryOptions: Promise<QueryOptions>,
+    @QueryOpts() queryOptions: QueryOptions,
   ) {
-    return this.userService.get(user, await queryOptions);
+    return this.userService.get(user, queryOptions);
+  }
+
+  @Get('getbyid/:id')
+  async getById(
+    @AuthenticatedUser() user: User,
+    @Param('id') id: string,
+  ) {
+    return this.userService.getById(user, id);
+  }
+
+  @Post('create')
+  async create(
+    @AuthenticatedUser() authUser: User,
+    @Body() user: any,
+  ) {
+    return this.userService.create(authUser, user);
+  }
+
+  @Get('update')
+  async update(
+    @AuthenticatedUser() authUser: User,
+    @Body() user: any,
+  ) {
+    return this.userService.update(authUser, user);
+  }
+
+  @Get('validate')
+  async validate(
+    @Body() user: any,
+  ) {
+    return this.userService.validate(user);
   }
 }
