@@ -36,7 +36,7 @@ export const testUser: User = {
   email: 'test@tm.net',
   billingGroups: [],
   isActive: true,
-  role: UserRole.ADMIN,
+  role: UserRole.SUPERADMIN,
 };
 
 export function addDocumentsToCollection(

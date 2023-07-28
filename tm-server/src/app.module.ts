@@ -22,6 +22,10 @@ import { env } from 'process';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './passport/guards';
 import { AuthController } from './controllers/auth/auth.controller';
+import { ActivityController } from './controllers/activity/activity.controller';
+import { PhaseController } from './controllers/phase/phase.controller';
+import { ProjectController } from './controllers/project/project.controller';
+import { TimesheetController } from './controllers/timesheet/timesheet.controller';
 
 Settings.defaultLocale = 'fr-CA';
 Settings.defaultZone = 'America/New_York';
@@ -45,7 +49,7 @@ const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
     }),
     PassportModule,
   ],
-  controllers: [AppController, UserController, AuthController],
+  controllers: [AppController, UserController, AuthController, ActivityController, PhaseController, ProjectController, TimesheetController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: PUBLIC_KEY, useValue: publicKey },

@@ -271,11 +271,15 @@ describe('CrudService', () => {
       { data: '8' },
       { data: '9' },
       { data: '10' },
+      { data: '100' },
+      { data: '1000' },
     ]);
     expect(await service.prefixSearchByField(dummyUser, 'data', '1')).toEqual(
       expect.arrayContaining([
         { _id: expect.any(String), data: '1' },
         { _id: expect.any(String), data: '10' },
+        { _id: expect.any(String), data: '100' },
+        { _id: expect.any(String), data: '1000' },
       ]),
     );
   });

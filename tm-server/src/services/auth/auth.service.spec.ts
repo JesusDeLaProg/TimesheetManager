@@ -105,7 +105,7 @@ describe('AuthService', () => {
     };
     await Users.doc('1').create(user);
     const u = (await Users.doc('1').get()).data();
-    expect(await service.changePassword(u, u, 'newpassword')).toEqual(
+    expect(await service.changePassword(u, u, 'newpassword', 'password')).toEqual(
       undefined,
     );
     expect(

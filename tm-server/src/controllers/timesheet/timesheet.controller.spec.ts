@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
+import { TimesheetController } from './timesheet.controller';
 import { Firestore, DocumentReference } from '@google-cloud/firestore';
 import { Provider } from '@nestjs/common';
-import { initFirestore, closeFirestore, JwtModuleProvider } from '//test/test-base';
-import { UserService } from '//services/user/user.service';
-import { UserValidator } from '//dtos/user';
-import { AuthService } from '//services/auth/auth.service';
+import { ActivityController } from '../activity/activity.controller';
+import { initFirestore, closeFirestore } from '//test/test-base';
+import { TimesheetService } from '//services/timesheet/timesheet.service';
+import { TimesheetValidator } from '//dtos/timesheet';
 
-describe('UserController', () => {
+describe('TimesheetController', () => {
   let db: Firestore;
   let root: DocumentReference;
   let providers: Provider[];
-  let controller: UserController;
+  let controller: TimesheetController;
 
   beforeAll(async () => {
     ({ db, root, providers } = await initFirestore());
@@ -23,12 +23,11 @@ describe('UserController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UserController],
-      providers: [UserService, UserValidator, AuthService, ...providers],
-      imports: [JwtModuleProvider()]
+      controllers: [TimesheetController],
+      providers: [TimesheetService, TimesheetValidator, ...providers]
     }).compile();
 
-    controller = module.get<UserController>(UserController);
+    controller = module.get<TimesheetController>(TimesheetController);
   });
 
   it('should be defined', () => {
