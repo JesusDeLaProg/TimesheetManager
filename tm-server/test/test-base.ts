@@ -28,7 +28,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 jest.setTimeout(120000);
 
-export const testUser: User = {
+export const TEST_USER: User = {
   _id: 'abcd',
   username: 'test-user',
   firstName: 'test',

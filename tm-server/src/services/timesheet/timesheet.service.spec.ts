@@ -72,6 +72,7 @@ describe('TimesheetService', () => {
     Projects = module.get(PROJECTS);
     Phases = module.get(PHASES);
     Activities = module.get(ACTIVITIES);
+    await db.recursiveDelete(root);
     await db
       .batch()
       .set(
@@ -92,10 +93,6 @@ describe('TimesheetService', () => {
       .set(Phases.doc('3'), { code: 'AD', name: 'Admin', activities: ['4'] })
       .set(Activities.doc('4'), { code: 'GE', name: 'General' })
       .commit();
-  });
-
-  afterEach(async () => {
-    await db.recursiveDelete(root);
   });
 
   it('should be defined', () => {

@@ -33,9 +33,7 @@ describe('ActivityDTO', () => {
       validator.validate({ _id: '1', code: 'AB', name: 'test' }),
     ).resolves.toEqual<ValidationResult<Activity>>({
       __success: true,
-      _id: '1',
-      code: 'AB',
-      name: 'test',
+      value: { _id: '1', code: 'AB', name: 'test' },
     });
   });
 

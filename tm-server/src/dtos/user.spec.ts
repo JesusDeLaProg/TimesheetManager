@@ -101,7 +101,7 @@ describe('UserDTO', () => {
       ValidationResult<User>
     >({
       __success: true,
-      ...VALID_NORMALIZED_USER,
+      value: VALID_NORMALIZED_USER,
     });
   });
 

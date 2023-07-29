@@ -51,10 +51,7 @@ describe('PhaseDTO', () => {
       }),
     ).resolves.toEqual<ValidationResult<Phase>>({
       __success: true,
-      _id: '1',
-      code: 'AB',
-      name: 'test',
-      activities: ['2', '3'],
+      value: { _id: '1', code: 'AB', name: 'test', activities: ['2', '3'] },
     });
   });
 

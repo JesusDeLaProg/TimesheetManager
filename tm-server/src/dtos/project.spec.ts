@@ -41,12 +41,14 @@ describe('ProjectDTO', () => {
       }),
     ).resolves.toEqual<ValidationResult<Project>>({
       __success: true,
-      _id: '1',
-      code: '23-01',
-      name: 'test',
-      client: 'Client 1',
-      type: ProjectType.PUBLIC,
-      isActive: true,
+      value: {
+        _id: '1',
+        code: '23-01',
+        name: 'test',
+        client: 'Client 1',
+        type: ProjectType.PUBLIC,
+        isActive: true,
+      },
     });
   });
 

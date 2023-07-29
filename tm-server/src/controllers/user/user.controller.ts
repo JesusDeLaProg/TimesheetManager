@@ -18,33 +18,22 @@ export class UserController {
   }
 
   @Get('getbyid/:id')
-  async getById(
-    @AuthenticatedUser() user: User,
-    @Param('id') id: string,
-  ) {
+  async getById(@AuthenticatedUser() user: User, @Param('id') id: string) {
     return this.userService.getById(user, id);
   }
 
   @Post('create')
-  async create(
-    @AuthenticatedUser() authUser: User,
-    @Body() user: any,
-  ) {
+  async create(@AuthenticatedUser() authUser: User, @Body() user: any) {
     return this.userService.create(authUser, user);
   }
 
   @Get('update')
-  async update(
-    @AuthenticatedUser() authUser: User,
-    @Body() user: any,
-  ) {
+  async update(@AuthenticatedUser() authUser: User, @Body() user: any) {
     return this.userService.update(authUser, user);
   }
 
   @Get('validate')
-  async validate(
-    @Body() user: any,
-  ) {
+  async validate(@Body() user: any) {
     return this.userService.validate(user);
   }
 }

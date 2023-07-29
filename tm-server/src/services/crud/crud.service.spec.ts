@@ -176,7 +176,7 @@ describe('CrudService', () => {
 
   it('validate(valid) should return input object', async () => {
     expect(await service.validate({ data: 1 })).toEqual({
-      data: 1,
+      value: { data: 1 },
       __success: true,
     });
   });
@@ -195,8 +195,7 @@ describe('CrudService', () => {
 
   it('create(valid) should return created doc', async () => {
     expect(await service.create(dummyUser, { data: 1 })).toEqual({
-      _id: expect.any(String),
-      data: 1,
+      value: { _id: expect.any(String), data: 1 },
       __success: true,
     });
   });
@@ -219,8 +218,7 @@ describe('CrudService', () => {
     expect(
       await service.update(dummyUser, { _id: docs[0].id, data: 10 }),
     ).toEqual({
-      _id: docs[0].id,
-      data: 10,
+      value: { _id: docs[0].id, data: 10 },
       __success: true,
     });
   });

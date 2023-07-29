@@ -1,6 +1,6 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
-import { Inject, Injectable } from '@nestjs/common';
-import { UserRole } from '@tm/types/models/datamodels';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { IUser, UserRole } from '@tm/types/models/datamodels';
 import { CrudService, MutationResult } from '//services/crud/crud.service';
 import { USERS } from '//config/constants';
 import { User, UserValidator } from '//dtos/user';
@@ -11,7 +11,7 @@ import { AuthorizationUtils } from '//utils/authorization';
 @Injectable()
 export class UserService extends CrudService<User> {
   constructor(
-    @Inject(USERS) users: CollectionReference<User>,
+    @Inject(USERS) private users: CollectionReference<User>,
     validator: UserValidator,
     private authService: AuthService,
   ) {
@@ -90,23 +90,43 @@ export class UserService extends CrudService<User> {
   }
 
   async create(user: User, object: any): Promise<MutationResult<User>> {
-    const ret = await super.create(user, object);
-    if (ret.__success) {
-      const newPass = ret.password;
-      await this.authService.changePassword(user, ret, newPass);
-      delete ret.password;
+    delete object._id;
+    const validationResult = await this.validate(object);
+    if (!validationResult.__success) {
+      return validationResult;
+    } else {
+      const newPass = validationResult.value.password;
+      delete validationResult.value.password;
+      if (await this.authorizeCreate(user, object)) {
+        const res = (
+          await (await this.users.add(validationResult.value)).get()
+        ).data();
+        if (newPass) {
+          await this.authService.changePassword(user, res, newPass);
+          delete res.password;
+        }
+        return Object.assign({
+          __success: true,
+          value: res,
+        });
+      } else {
+        throw new ForbiddenException(
+          `Création refusée sur ressource ${this.users.path}`,
+        );
+      }
     }
-    return ret;
   }
 
   async update(user: User, object: any): Promise<MutationResult<User>> {
+    const newPass = (object as IUser).password;
+    delete (object as IUser).password;
     const ret = await super.update(user, object);
-    if (ret.__success) {
-      if (ret.password) {
-        const newPass = ret.password;
-        await this.authService.changePassword(user, ret, newPass);
+    if (ret.__success && newPass) {
+      if (ret.value.password) {
+        const newPass = ret.value.password;
+        await this.authService.changePassword(user, ret.value, newPass);
       }
-      delete ret.password;
+      delete ret.value.password;
     }
     return ret;
   }

@@ -160,7 +160,7 @@ describe('TimesheetDTO', () => {
       ValidationResult<Timesheet>
     >({
       __success: true,
-      ...VALID_NORMALIZED_TIMESHEET,
+      value: VALID_NORMALIZED_TIMESHEET,
     });
   });
 

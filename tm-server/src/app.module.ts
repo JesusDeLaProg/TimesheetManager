@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AppController } from '//app.controller';
 import { AppService } from '//app.service';
 import { CrudService } from '//services/crud/crud.service';
 import { UserController } from '//controllers/user/user.controller';
@@ -49,7 +48,14 @@ const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
     }),
     PassportModule,
   ],
-  controllers: [AppController, UserController, AuthController, ActivityController, PhaseController, ProjectController, TimesheetController],
+  controllers: [
+    UserController,
+    AuthController,
+    ActivityController,
+    PhaseController,
+    ProjectController,
+    TimesheetController,
+  ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: PUBLIC_KEY, useValue: publicKey },

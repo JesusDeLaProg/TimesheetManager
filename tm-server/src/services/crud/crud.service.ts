@@ -109,14 +109,12 @@ export class CrudService<T extends { _id?: StringId }> {
     if (!validationResult.__success) {
       return validationResult;
     } else {
-      delete validationResult.__success;
       if (await this.authorizeCreate(user, object)) {
-        return Object.assign(
-          { __success: true as const },
-          (
-            await (await this.collection.add(validationResult as T)).get()
-          ).data(),
-        );
+        const res = await this.collection.add(validationResult.value as T);
+        return {
+          __success: true,
+          value: (await res.get()).data(),
+        };
       } else {
         throw new ForbiddenException(
           `Création refusée sur ressource ${this.collection.path}`,
@@ -138,11 +136,11 @@ export class CrudService<T extends { _id?: StringId }> {
       const updatedDocument = plainToInstance(this.objectClass, object);
       if (await this.authorizeUpdate(user, originalDocument, updatedDocument)) {
         const docRef = this.collection.doc(id);
-        await docRef.set(updatedDocument);
-        return Object.assign(
-          { __success: true as const },
-          (await docRef.get()).data(),
-        );
+        await docRef.set(updatedDocument, { merge: true });
+        return {
+          __success: true,
+          value: (await docRef.get()).data(),
+        };
       } else {
         throw new ForbiddenException(`Mise à jour refusée sur document ${id}`);
       }

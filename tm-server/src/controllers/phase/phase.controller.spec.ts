@@ -23,7 +23,7 @@ describe('PhaseController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PhaseController],
-      providers: [PhaseService, PhaseValidator, ...providers]
+      providers: [PhaseService, PhaseValidator, ...providers],
     }).compile();
 
     controller = module.get<PhaseController>(PhaseController);

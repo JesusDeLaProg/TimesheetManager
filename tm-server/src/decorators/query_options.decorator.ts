@@ -12,7 +12,11 @@ import { validateSync } from 'class-validator';
 export const QueryOpts = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): QueryOptions | null => {
     const query = ctx.switchToHttp().getRequest<Request>().query;
-    if (query.limit === undefined && query.skip === undefined && query.sort === undefined) {
+    if (
+      query.limit === undefined &&
+      query.skip === undefined &&
+      query.sort === undefined
+    ) {
       return null;
     }
     const qo = plainToInstance(QueryOptions, {

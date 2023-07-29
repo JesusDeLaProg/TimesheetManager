@@ -10,7 +10,7 @@ import {
   addDocumentsToCollection,
   closeFirestore,
   initFirestore,
-  testUser,
+  TEST_USER,
 } from '//test/test-base';
 import { ProjectValidator } from '//dtos/project';
 import { Provider } from '@nestjs/common';
@@ -55,7 +55,7 @@ describe('ProjectService', () => {
       { code: '21-07' },
       { code: '22-01' },
     ]);
-    expect(await service.searchByCodePrefix(testUser, '21')).toEqual(
+    expect(await service.searchByCodePrefix(TEST_USER, '21')).toEqual(
       expect.arrayContaining([
         { _id: expect.any(String), code: '21-01' },
         { _id: expect.any(String), code: '21-02' },

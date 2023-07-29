@@ -5,7 +5,7 @@ import {
   JwtModuleProvider,
   closeFirestore,
   initFirestore,
-  testUser,
+  TEST_USER,
 } from '//test/test-base';
 import { UserService } from './user.service';
 import { UserValidator } from '//dtos/user';
@@ -60,12 +60,13 @@ describe('UserService', () => {
       role: UserRole.ADMIN,
       isActive: true,
     } as IUser;
-    const creationResult = await service.create(testUser, creationRequest);
-    expect(creationResult).toEqual(
-      expect.objectContaining({ username: 'admin', __success: true }),
-    );
+    const creationResult = await service.create(TEST_USER, creationRequest);
+    expect(creationResult).toMatchObject({
+      value: { username: 'admin' },
+      __success: true,
+    });
     const duplicateCreateResult = await service.create(
-      testUser,
+      TEST_USER,
       creationRequest,
     );
     expect(duplicateCreateResult.__success).toBe(false);

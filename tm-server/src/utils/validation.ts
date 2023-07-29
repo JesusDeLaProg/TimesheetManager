@@ -52,7 +52,7 @@ export class BaseObjectValidator<T extends { _id?: StringId }>
     errors: ValidationError[],
   ): ValidationResult<T> {
     if (errors.length === 0) {
-      return Object.assign(object, { __success: true as const });
+      return { __success: true, value: object };
     } else {
       return { __success: false, errors };
     }

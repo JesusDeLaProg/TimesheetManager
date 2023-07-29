@@ -105,9 +105,9 @@ describe('AuthService', () => {
     };
     await Users.doc('1').create(user);
     const u = (await Users.doc('1').get()).data();
-    expect(await service.changePassword(u, u, 'newpassword', 'password')).toEqual(
-      undefined,
-    );
+    expect(
+      await service.changePassword(u, u, 'newpassword', 'password'),
+    ).toEqual(undefined);
     expect(
       await argon2.verify(
         (await Users.doc('1').get()).data().password,
