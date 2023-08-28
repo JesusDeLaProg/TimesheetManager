@@ -1,6 +1,6 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
-import { ITimesheet, UserRole } from '@tm/types/models/datamodels';
+import { ITimesheet, UserRole } from '//types/models/datamodels';
 import { CrudService } from '//services/crud/crud.service';
 import { TIMESHEETS, USERS } from '//config/constants';
 import { Timesheet, TimesheetValidator } from '//dtos/timesheet';

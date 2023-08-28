@@ -12,7 +12,7 @@ import {
   IUser,
   ProjectType,
   UserRole,
-} from '@tm/types/models/datamodels';
+} from '//types/models/datamodels';
 import { DateTime } from 'luxon';
 import { TimesheetService } from './timesheet.service';
 import { closeFirestore, initFirestore } from '//test/test-base';

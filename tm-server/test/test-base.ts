@@ -5,7 +5,7 @@ import {
   Firestore,
   QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
-import { StringId, UserRole } from '@tm/types/models/datamodels';
+import { StringId, UserRole } from '//types/models/datamodels';
 import { User } from '//dtos/user';
 import { v4 as uuidv4 } from 'uuid';
 import {

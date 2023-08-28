@@ -1,5 +1,5 @@
 import { CollectionReference, Query, Timestamp } from '@google-cloud/firestore';
-import { StringId } from '@tm/types/models/datamodels';
+import { StringId } from '//types/models/datamodels';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { ObjectValidator, ValidationResult } from '//types/validator';

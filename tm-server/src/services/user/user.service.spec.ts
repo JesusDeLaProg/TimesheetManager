@@ -1,6 +1,6 @@
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
+import { IUser, ProjectType, UserRole } from '//types/models/datamodels';
 import {
   JwtModuleProvider,
   closeFirestore,

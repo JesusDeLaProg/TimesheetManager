@@ -1,6 +1,6 @@
 import { closeFirestore, initFirestore } from '//test/test-base';
 import { DocumentReference, Firestore } from '@google-cloud/firestore';
-import { ProjectType } from '@tm/types/models/datamodels';
+import { ProjectType } from '//types/models/datamodels';
 import { ValidationResult } from '//types/validator';
 import { Project, ProjectValidator } from './project';
 import { Test, TestingModule } from '@nestjs/testing';

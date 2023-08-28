@@ -7,7 +7,7 @@ import {
   plainToInstance,
 } from 'class-transformer';
 import { DocumentData, QueryDocumentSnapshot } from '@google-cloud/firestore';
-import { StringId } from '@tm/types/models/datamodels';
+import { StringId } from '//types/models/datamodels';
 import { Activity } from '//dtos/activity';
 import { Phase } from '//dtos/phase';
 import { Project } from '//dtos/project';
@@ -60,5 +60,6 @@ function documentConverter<T extends { _id?: StringId }>(
       useValue: root.collection('user').withConverter(documentConverter(User)),
     },
   ],
+  exports: [ACTIVITIES, PHASES, PROJECTS, TIMESHEETS, USERS],
 })
 export class DbModule {}

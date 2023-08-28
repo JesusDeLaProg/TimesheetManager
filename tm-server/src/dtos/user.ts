@@ -4,7 +4,7 @@ import {
   ProjectType,
   StringId,
   UserRole,
-} from '@tm/types/models/datamodels';
+} from '//types/models/datamodels';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,

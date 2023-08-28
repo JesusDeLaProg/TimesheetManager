@@ -1,12 +1,13 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { IUser, UserRole } from '@tm/types/models/datamodels';
+import { IUser, UserRole } from '//types/models/datamodels';
 import { CrudService, MutationResult } from '//services/crud/crud.service';
 import { USERS } from '//config/constants';
 import { User, UserValidator } from '//dtos/user';
 import { QueryOptions } from '//dtos/query_options';
 import { AuthService } from '//services/auth/auth.service';
 import { AuthorizationUtils } from '//utils/authorization';
+import constants from '../../../secrets/constants.json';
 
 @Injectable()
 export class UserService extends CrudService<User> {

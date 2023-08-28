@@ -6,7 +6,7 @@ import {
 import { Request } from 'express';
 import { QueryOptions } from '../dtos/query_options';
 import { plainToInstance } from 'class-transformer';
-import { IQueryOptions } from '@tm/types/query_options';
+import { IQueryOptions } from '//types/query_options';
 import { validateSync } from 'class-validator';
 
 export const QueryOpts = createParamDecorator(

@@ -7,6 +7,6 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
-  await app.listen(env['tm_server_port'] || 8080);
+  await app.listen(env.PORT || 8080);
 }
 bootstrap();

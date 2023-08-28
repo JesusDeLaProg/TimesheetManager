@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tm-server
+  labels:
+    app: tm-server
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: tm-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tm-server
+  labels:
+    app: tm-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tm-server
+  template:
+    metadata:
+      labels:
+        app: tm-server
+    spec:
+      containers:
+      - name: tm-server
+        image: tm-server

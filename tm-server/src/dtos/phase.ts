@@ -1,5 +1,5 @@
 import { CollectionReference } from '@google-cloud/firestore';
-import { IPhase, StringId } from '@tm/types/models/datamodels';
+import { IPhase, StringId } from '//types/models/datamodels';
 import {
   IsArray,
   IsNotEmpty,

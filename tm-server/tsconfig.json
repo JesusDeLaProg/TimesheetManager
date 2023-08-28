@@ -21,7 +21,6 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@tm/types/*": ["../types/*"],
       "//*": ["./src/*"],
       "//test/*": ["./test/*"]
     }

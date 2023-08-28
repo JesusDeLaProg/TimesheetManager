@@ -1,5 +1,5 @@
 import { CollectionReference } from '@google-cloud/firestore';
-import { IProject, ProjectType } from '@tm/types/models/datamodels';
+import { IProject, ProjectType } from '//types/models/datamodels';
 import {
   IsBoolean,
   IsEnum,

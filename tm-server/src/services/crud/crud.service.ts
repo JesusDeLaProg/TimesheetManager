@@ -1,5 +1,5 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
-import { StringId } from '@tm/types/models/datamodels';
+import { StringId } from '//types/models/datamodels';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';

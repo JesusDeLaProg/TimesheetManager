@@ -1,0 +1,17 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: tm-server
+build:
+  artifacts:
+    - image: tm-server
+      runtimeType: nodejs
+      buildpacks:
+        builder: gcr.io/buildpacks/builder:v1
+manifests:
+  rawYaml:
+    - deployment.yaml
+portForward:
+  - resourceType: service
+    resourceName: tm-server
+    port: 8080

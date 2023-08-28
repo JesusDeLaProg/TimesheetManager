@@ -4,7 +4,7 @@ import {
   DocumentReference,
   Firestore,
 } from '@google-cloud/firestore';
-import { ITimesheet, ProjectType, UserRole } from '@tm/types/models/datamodels';
+import { ITimesheet, ProjectType, UserRole } from '//types/models/datamodels';
 import { ValidationResult } from '//types/validator';
 import { Timesheet, TimesheetValidator } from './timesheet';
 import { Test, TestingModule } from '@nestjs/testing';

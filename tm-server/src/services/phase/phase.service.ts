@@ -1,6 +1,6 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
-import { IPhase, UserRole } from '@tm/types/models/datamodels';
+import { IPhase, UserRole } from '//types/models/datamodels';
 import { CrudService } from '//services/crud/crud.service';
 import { Phase, PhaseValidator } from '//dtos/phase';
 import { User } from '//dtos/user';

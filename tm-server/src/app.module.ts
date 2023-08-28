@@ -34,8 +34,8 @@ const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
 
 @Module({
   imports: [
-    DtoModule,
     DbModule,
+    DtoModule,
     JwtModule.register({
       privateKey,
       publicKey,

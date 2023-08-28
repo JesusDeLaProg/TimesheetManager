@@ -4,9 +4,18 @@ import { PhaseValidator } from './phase';
 import { ProjectValidator } from './project';
 import { TimesheetValidator } from './timesheet';
 import { UserValidator } from './user';
+import { DbModule } from '../config/db.module';
 
 @Module({
+  imports: [DbModule],
   providers: [
+    ActivityValidator,
+    PhaseValidator,
+    ProjectValidator,
+    TimesheetValidator,
+    UserValidator,
+  ],
+  exports: [
     ActivityValidator,
     PhaseValidator,
     ProjectValidator,

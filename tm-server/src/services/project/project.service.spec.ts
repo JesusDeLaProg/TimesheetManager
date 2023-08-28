@@ -4,7 +4,7 @@ import {
   Firestore,
 } from '@google-cloud/firestore';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IProject } from '@tm/types/models/datamodels';
+import { IProject } from '//types/models/datamodels';
 import { ProjectService } from './project.service';
 import {
   addDocumentsToCollection,

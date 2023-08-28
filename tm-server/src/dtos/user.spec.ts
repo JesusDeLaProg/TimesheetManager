@@ -6,7 +6,7 @@ import {
   Firestore,
   QueryDocumentSnapshot,
 } from '@google-cloud/firestore';
-import { IUser, ProjectType, UserRole } from '@tm/types/models/datamodels';
+import { IUser, ProjectType, UserRole } from '//types/models/datamodels';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ValidationResult } from '//types/validator';
 import { User, UserValidator } from './user';

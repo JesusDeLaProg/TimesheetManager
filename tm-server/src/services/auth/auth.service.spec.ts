@@ -14,7 +14,7 @@ import { Provider } from '@nestjs/common';
 import { User } from '//dtos/user';
 import * as argon2 from 'argon2';
 import { USERS } from '//config/constants';
-import { IUser, UserRole } from '@tm/types/models/datamodels';
+import { IUser, UserRole } from '//types/models/datamodels';
 import { JwtService } from '@nestjs/jwt';
 
 describe('AuthService', () => {

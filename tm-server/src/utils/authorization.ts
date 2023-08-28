@@ -1,5 +1,5 @@
 import { Query } from '@google-cloud/firestore';
-import { UserRole } from '@tm/types/models/datamodels';
+import { UserRole } from '//types/models/datamodels';
 import { User } from '//dtos/user';
 
 export class AuthorizationUtils {

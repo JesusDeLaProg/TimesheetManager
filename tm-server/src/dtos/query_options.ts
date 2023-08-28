@@ -1,4 +1,4 @@
-import { IQueryOptions } from '@tm/types/query_options';
+import { IQueryOptions } from '//types/query_options';
 import { Type } from 'class-transformer';
 import {
   IsInt,

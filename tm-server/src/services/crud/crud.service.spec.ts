@@ -7,7 +7,7 @@ import {
   documentConverter,
 } from '//test/test-base';
 import { CrudService } from './crud.service';
-import { IUser, UserRole } from '@tm/types/models/datamodels';
+import { IUser, UserRole } from '//types/models/datamodels';
 import { BaseObjectValidator } from '//utils/validation';
 
 class Data {

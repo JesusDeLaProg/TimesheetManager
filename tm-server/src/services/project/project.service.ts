@@ -1,6 +1,6 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
-import { IProject, UserRole } from '@tm/types/models/datamodels';
+import { IProject, UserRole } from '//types/models/datamodels';
 import { PROJECTS } from '//config/constants';
 import { Project, ProjectValidator } from '//dtos/project';
 import { QueryOptions } from '//dtos/query_options';

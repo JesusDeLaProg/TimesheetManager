@@ -1,6 +1,6 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
 import { Inject, Injectable } from '@nestjs/common';
-import { IActivity, UserRole } from '@tm/types/models/datamodels';
+import { IActivity, UserRole } from '//types/models/datamodels';
 import { Activity, ActivityValidator } from '//dtos/activity';
 import { User } from '//dtos/user';
 import { CrudService } from '//services/crud/crud.service';

@@ -5,6 +5,40 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Kubernetes: Run/Debug",
+            "type": "cloudcode.kubernetes",
+            "request": "launch",
+            "skaffoldConfig": "${workspaceFolder}\\tm-server\\skaffold.yaml",
+            "watch": true,
+            "cleanUp": true,
+            "portForward": true
+        },
+        {
+            "name": "Cloud Run: Run/Debug Locally",
+            "type": "cloudcode.cloudrun",
+            "request": "launch",
+            "build": {
+                "buildpacks": {
+                    "path": "tm-server/package.json",
+                    "builder": "gcr.io/buildpacks/builder:v1"
+                }
+            },
+            "image": "timesheet-manager",
+            "service": {
+                "name": "timesheet-manager",
+                "containerPort": 8080,
+                "resources": {
+                    "limits": {
+                        "memory": "256Mi"
+                    }
+                }
+            },
+            "target": {
+                "minikube": {}
+            },
+            "watch": true
+        },
+        {
             "name": "Attach",
             "port": 9229,
             "request": "attach",
@@ -27,7 +61,7 @@
             "env": {
                 "GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager-test.json"
             },
-            "type": "node",
+            "type": "node"
         },
         {
             "name": "Debug Server",
