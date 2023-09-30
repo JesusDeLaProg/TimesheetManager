@@ -11,11 +11,11 @@ variable "org_id" {
 }
 
 provider "google" {
-  project     = "timesheet-manager-v2"
+  project     = "timesheet-manager-gcloud"
   region      = "northamerica-northeast1"
 }
 
 provider "google-beta" {
-  project     = "timesheet-manager-v2"
+  project     = "timesheet-manager-gcloud"
   region      = "northamerica-northeast1"
 }

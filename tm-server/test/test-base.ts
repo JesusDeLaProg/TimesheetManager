@@ -70,7 +70,7 @@ export function documentConverter<T extends { _id?: StringId }>(
 
 export async function initFirestore() {
   const db = new Firestore({
-    projectId: 'timesheet-manager-v2',
+    projectId: 'timesheet-manager-gcloud',
     ignoreUndefinedProperties: true,
   });
   const uuid = uuidv4();

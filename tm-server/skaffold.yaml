@@ -7,7 +7,7 @@ build:
     - image: tm-server
       runtimeType: nodejs
       buildpacks:
-        builder: gcr.io/buildpacks/builder:v1
+        builder: gcr.io/buildpacks/builder:latest
 manifests:
   rawYaml:
     - deployment.yaml
