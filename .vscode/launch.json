@@ -11,6 +11,7 @@
             "skaffoldConfig": "${workspaceFolder}\\tm-server\\skaffold.yaml",
             "watch": true,
             "cleanUp": true,
+            "autoStop": false,
             "portForward": true
         },
         {
