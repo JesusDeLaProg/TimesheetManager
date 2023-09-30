@@ -59,9 +59,6 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "env": {
-                "GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager-test.json"
-            },
             "type": "node"
         },
         {
@@ -76,9 +73,6 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "env": {
-                "GOOGLE_APPLICATION_CREDENTIALS": "./secrets/timesheet-manager.json"
-            },
             "type": "node",
             "console": "integratedTerminal"
         }
