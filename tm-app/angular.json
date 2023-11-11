@@ -8,6 +8,7 @@
       "schematics": {
         "@schematics/angular:component": {
           "inlineTemplate": true,
+          "inlineStyle": true,
           "style": "scss"
         }
       },
@@ -98,5 +99,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "9c50edf3-0f18-4c07-b597-688414bc4358"
   }
 }

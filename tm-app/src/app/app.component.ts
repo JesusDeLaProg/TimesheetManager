@@ -11,7 +11,7 @@ import { RouterOutlet } from '@angular/router';
 
     <router-outlet></router-outlet>
   `,
-  styleUrls: ['./app.component.scss']
+  styles: ``,
 })
 export class AppComponent {
   title = 'tm-app';
