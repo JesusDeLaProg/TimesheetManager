@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ITimesheet } from '../../../../../../types/models/datamodels';
 
 const timesheet: ITimesheet = {
@@ -55,12 +56,41 @@ const timesheet: ITimesheet = {
 @Component({
   selector: 'tm-timesheet-table',
   standalone: true,
-  imports: [],
+  imports: [MatTableModule],
   template: `
-    
+    <table mat-table [dataSource]="data" class="mat-elevation-z8">
+      <ng-container matColumnDef="project">
+        <th mat-header-cell *matHeaderCellDef>Projet</th>
+        <td mat-cell *matCellDef="let line">{{line.project}}</td>
+      </ng-container>
+      <ng-container matColumnDef="phase">
+        <th mat-header-cell *matHeaderCellDef>Phase</th>
+        <td mat-cell *matCellDef="let line">{{line.phase}}</td>
+      </ng-container>
+      <ng-container matColumnDef="activity">
+        <th mat-header-cell *matHeaderCellDef>Projet</th>
+        <td mat-cell *matCellDef="let line">{{line.activity}}</td>
+      </ng-container>
+      <ng-container matColumnDef="divers">
+        <th mat-header-cell *matHeaderCellDef>Projet</th>
+        <td mat-cell *matCellDef="let line">{{line.divers}}</td>
+      </ng-container>
+      @for(num of entryNums; track num) {
+        <ng-container matColumnDef="entry-{{num}}">
+          <th mat-header-cell *matHeaderCellDef="let row">{{dates[num]}}</th>
+          <td mat-cell *matCellDef="let row">{{row.entries[num].time}}</td>
+        </ng-container>
+      }
+
+      <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnsToDisplay;"></tr>
+    </table>
   `,
   styles: ``
 })
 export class TimesheetTableComponent {
-
+  data = new MatTableDataSource(timesheet.lines);
+  entryNums = timesheet.lines[0].entries.map((e, i) => i);
+  dates = timesheet.lines[0].entries.map((e, i) => new Date(2024, 0, timesheet.begin.getDay() + i));
+  columnsToDisplay = ['project', 'phase', 'activity', 'divers', ...this.entryNums.map(e => 'entry-' + e)];
 }
