@@ -4,13 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { AutocompleteSelectComponent } from '../autocomplete-select/autocomplete-select.component';
 
 @Component({
   selector: 'tm-timesheet-table-header',
   standalone: true,
   imports: [
-    AutocompleteSelectComponent,
     FormsModule,
     MatDatepickerModule,
     MatFormFieldModule,
@@ -31,7 +29,6 @@ import { AutocompleteSelectComponent } from '../autocomplete-select/autocomplete
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
-      <tm-autocomplete-select />
     </div>
   `,
   styles: `

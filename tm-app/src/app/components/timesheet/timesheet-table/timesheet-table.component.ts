@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { TimesheetTableHeaderComponent } from '../timesheet-table-header/timesheet-table-header.component';
+import { ActivityAutocompleteSelectComponent, PhaseAutocompleteSelectComponent, ProjectAutocompleteSelectComponent } from '../autocomplete-select/autocomplete-select.component';
 
 const timesheet: ITimesheet = {
   user: 'Maxime Charland',
@@ -13,9 +14,9 @@ const timesheet: ITimesheet = {
   end: new Date(2024, 0, 20),
   lines: [
     {
-      project: '24-01: Premier projet',
-      phase: 'AD',
-      activity: 'GE',
+      project: '24-01',
+      phase: '1111',
+      activity: 'aaaa',
       entries: [
         { date: new Date(2024, 0, 7), time: 0 },
         { date: new Date(2024, 0, 8), time: Math.round(Math.random() * 3) },
@@ -34,9 +35,9 @@ const timesheet: ITimesheet = {
       ]
     },
     {
-      project: '24-02: Deuxième projet',
-      phase: 'SU',
-      activity: 'AS',
+      project: '24-02',
+      phase: '3333',
+      activity: 'cccc',
       entries: [
         { date: new Date(2024, 0, 7), time: 0 },
         { date: new Date(2024, 0, 8), time: Math.round(Math.random() * 3) },
@@ -67,6 +68,9 @@ const timesheet: ITimesheet = {
     MatInputModule,
     MatTableModule,
     FormsModule,
+    ActivityAutocompleteSelectComponent,
+    PhaseAutocompleteSelectComponent,
+    ProjectAutocompleteSelectComponent,
     TimesheetTableHeaderComponent,
   ],
   template: `
@@ -75,17 +79,21 @@ const timesheet: ITimesheet = {
       <table mat-table [dataSource]="data">
         <ng-container matColumnDef="project">
           <th mat-header-cell *matHeaderCellDef>Projet</th>
-          <td mat-cell *matCellDef="let line">{{line.project}}</td>
+          <td mat-cell *matCellDef="let line"><tm-project-autocomplete-select [(value)]="line.project" /></td>
           <td *matFooterCellDef><div class="project-footer"><b>Total:</b></div></td>
         </ng-container>
         <ng-container matColumnDef="phase">
           <th mat-header-cell *matHeaderCellDef>Phase</th>
-          <td mat-cell *matCellDef="let line">{{line.phase}}</td>
+          <td mat-cell *matCellDef="let line" style="width: 110px">
+            <tm-phase-autocomplete-select [(value)]="line.phase" />
+          </td>
           <td *matFooterCellDef></td>
         </ng-container>
         <ng-container matColumnDef="activity">
           <th mat-header-cell *matHeaderCellDef>Activité</th>
-          <td mat-cell *matCellDef="let line">{{line.activity}}</td>
+          <td mat-cell *matCellDef="let line" style="width: 110px">
+            <tm-activity-autocomplete-select [chosenPhase]="line.phase" [(value)]="line.activity" />
+          </td>
           <td *matFooterCellDef></td>
         </ng-container>
         <ng-container matColumnDef="divers">
@@ -162,6 +170,19 @@ const timesheet: ITimesheet = {
 
     input[type=number] {
       -moz-appearance: textfield;
+    }
+
+    th {
+      text-align: center;
+
+      &:first-of-type {
+        text-align: start;
+      }
+    }
+
+    tm-phase-autocomplete-select, tm-activity-autocomplete-select {
+      width: 100px;
+      margin: 5px;
     }
   `
 })
