@@ -1,12 +1,16 @@
-import { Component } from '@angular/core';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { Component, ElementRef, OnInit, ViewChild, computed, signal } from '@angular/core';
+import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ITimesheet, ITimesheetLine } from '../../../../../../types/models/datamodels';
-import { DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { TimesheetTableHeaderComponent } from '../timesheet-table-header/timesheet-table-header.component';
 import { ActivityAutocompleteSelectComponent, PhaseAutocompleteSelectComponent, ProjectAutocompleteSelectComponent } from '../autocomplete-select/autocomplete-select.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { DateTime } from 'luxon';
+import { Observable, fromEvent, map } from 'rxjs';
 
 const timesheet: ITimesheet = {
   user: 'Maxime Charland',
@@ -63,10 +67,14 @@ const timesheet: ITimesheet = {
   selector: 'tm-timesheet-table',
   standalone: true,
   imports: [
+    AsyncPipe,
     DatePipe,
+    MatButtonModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatTableModule,
+    NgClass,
     FormsModule,
     ActivityAutocompleteSelectComponent,
     PhaseAutocompleteSelectComponent,
@@ -74,24 +82,34 @@ const timesheet: ITimesheet = {
     TimesheetTableHeaderComponent,
   ],
   template: `
-    <div class="mat-elevation-z8">
-      <tm-timesheet-table-header [timesheet]="TIMESHEET"/>
-      <table mat-table [dataSource]="data">
-        <ng-container matColumnDef="project">
+    <div #container class="mat-elevation-z8 container">
+      <tm-timesheet-table-header [timesheet]="TIMESHEET()"/>
+      <table mat-table [dataSource]="data()">
+        <ng-container matColumnDef="project" sticky>
           <th mat-header-cell *matHeaderCellDef>Projet</th>
-          <td mat-cell *matCellDef="let line"><tm-project-autocomplete-select [(value)]="line.project" /></td>
-          <td *matFooterCellDef><div class="project-footer"><b>Total:</b></div></td>
+          <td mat-cell *matCellDef="let line">
+          <div class="project-cell">
+            <button mat-icon-button (click)="deleteLine(line)"><mat-icon>delete</mat-icon></button>
+            <tm-project-autocomplete-select [(value)]="line.project" />
+          </div>
+          </td>
+          <td class="sticky-end-cell" [ngClass]="((containerScroll | async) ?? 0) > 0 ? 'mat-elevation-z12' : ''"
+            colspan="3" *matFooterCellDef style="background-color: white">
+            <div class="project-footer"><b>Total:</b></div>
+          </td>
         </ng-container>
-        <ng-container matColumnDef="phase">
+        <ng-container matColumnDef="phase" sticky>
           <th mat-header-cell *matHeaderCellDef>Phase</th>
           <td mat-cell *matCellDef="let line" style="width: 110px">
             <tm-phase-autocomplete-select [(value)]="line.phase" />
           </td>
           <td *matFooterCellDef></td>
         </ng-container>
-        <ng-container matColumnDef="activity">
-          <th mat-header-cell *matHeaderCellDef>Activité</th>
-          <td mat-cell *matCellDef="let line" style="width: 110px">
+        <ng-container matColumnDef="activity" sticky>
+          <th class="sticky-end-cell" [ngClass]="((containerScroll | async) ?? 0) > 0 ? 'mat-elevation-z12' : ''"
+            mat-header-cell *matHeaderCellDef>Activité</th>
+          <td class="sticky-end-cell" [ngClass]="((containerScroll | async) ?? 0) > 0 ? 'mat-elevation-z12' : ''"
+            mat-cell *matCellDef="let line" style="width: 110px">
             <tm-activity-autocomplete-select [chosenPhase]="line.phase" [(value)]="line.activity" />
           </td>
           <td *matFooterCellDef></td>
@@ -106,19 +124,29 @@ const timesheet: ITimesheet = {
           </td>
           <td *matFooterCellDef></td>
         </ng-container>
-        @for(num of entryNums; track num) {
-          <ng-container matColumnDef="entry-{{num}}">
-            <th mat-header-cell *matHeaderCellDef>{{data.data[0].entries[num].date | date:"d MMM"}}</th>
+        @for(col of daysColumns; track col; let i = $index) {
+          <ng-container matColumnDef="{{col}}">
+            <th mat-header-cell *matHeaderCellDef>{{dates[i] | date:"d MMM"}}</th>
             <td mat-cell *matCellDef="let line">
               <div class="entry-cell">
                 <input class="entry-time" type="number" min="0"
-                  [(ngModel)]="line.entries[num].time">
+                  [(ngModel)]="line.entries[i].time">
               </div>
             </td>
-            <td class="day-total" *matFooterCellDef><b>{{getTotalHourForDay(num)}}</b></td>
+            <td class="day-total" *matFooterCellDef><b>{{getTotalHourForDay(i)}}</b></td>
           </ng-container>
         }
 
+        <ng-container matColumnDef="week-total-0">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let line"><b>{{getWeekTotal(0, line)}}</b></td>
+          <td mat-footer-cell *matFooterCellDef><b>{{getWeekTotal(0)}}</b></td>
+        </ng-container>
+        <ng-container matColumnDef="week-total-1">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let line"><b>{{getWeekTotal(1, line)}}</b></td>
+          <td mat-footer-cell *matFooterCellDef><b>{{getWeekTotal(1)}}</b></td>
+        </ng-container>
         <ng-container matColumnDef="total">
           <th mat-header-cell *matHeaderCellDef>Total</th>
           <td mat-cell *matCellDef="let line"><b>{{getLineTotal(line)}}</b></td>
@@ -127,11 +155,44 @@ const timesheet: ITimesheet = {
 
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
         <tr mat-row *matRowDef="let row; columns: columnsToDisplay;"></tr>
-        <tr mat-footer-row *matFooterRowDef="columnsToDisplay"></tr>
+        <tr mat-footer-row *matFooterRowDef="footerColumns"></tr>
       </table>
     </div>
   `,
   styles: `
+    @use '@angular/material' as mat;
+
+    .sticky-end-cell {
+      @include mat.elevation-transition();
+      clip-path: inset(0px -50px 0px 0px);
+    }
+
+    .container {
+      width: 100%;
+      overflow-x: scroll;
+
+      &.scrolled {
+        .sticky-end-cell {
+          box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.5);
+        }
+      }
+    }
+
+    .project-cell {
+      display: flex;
+
+      button[mat-icon-button] {
+        color: #777;
+        margin-top: auto;
+        margin-bottom: auto;
+        margin-right: 5px;
+
+        &:hover {
+          color: #700;
+        }
+      }
+    }
+
     .project-footer {
       display: flex;
       flex-direction: column;
@@ -150,12 +211,22 @@ const timesheet: ITimesheet = {
       width: 45px;
       height: 30px;
       text-align: center;
+      border-radius: 5px;
+      border-style: none;
+      border-color: white;
+      -webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); 
+      box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5);
     }
 
     .entry-time {
       width: 30px;
       height: 30px;
       text-align: center;
+      border-radius: 5px;
+      border-style: none;
+      border-color: white;
+      -webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); 
+      box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5);
     }
 
     .day-total {
@@ -186,22 +257,62 @@ const timesheet: ITimesheet = {
     }
   `
 })
-export class TimesheetTableComponent {
-  TIMESHEET = timesheet;
-  data = new MatTableDataSource(timesheet.lines);
-  entryNums = timesheet.lines[0].entries.map((e, i) => i);
-  dates = timesheet.lines[0].entries.map((e, i) => new Date(2024, 0, timesheet.begin.getDay() + i));
-  columnsToDisplay = ['project', 'phase', 'activity', 'divers', ...this.entryNums.map(e => 'entry-' + e), 'total'];
+export class TimesheetTableComponent implements OnInit {
+  TIMESHEET = signal(timesheet);
+  DAYS_COUNT = 14;
+  data = computed(() => new MatTableDataSource(this.TIMESHEET().lines));
+  dates = (() => {
+    const start = DateTime.fromJSDate(this.TIMESHEET().begin).startOf('day');
+    return Array(this.DAYS_COUNT).fill(0).map((_, i) => start.plus({ day: i }).startOf('day').toJSDate());
+  })();
+  headerColumns = ['project', 'phase', 'activity', 'divers'];
+  daysColumns = Array(this.DAYS_COUNT).fill(0).map((_, i) => `entry-${i}`);
+  columnsToDisplay = (() => {
+    const cols = this.headerColumns;
+    for (let i = 0; i < Math.ceil(this.DAYS_COUNT / 7); ++i) {
+      const week = this.daysColumns.slice(i * 7, (i + 1) * 7);
+      cols.push(...week);
+      if (week.length === 7) {
+        cols.push('week-total-' + i);
+      }
+    }
+    return [...cols, 'total'];
+  })();
+  footerColumns = [this.columnsToDisplay[0], ...this.columnsToDisplay.slice(3)];
+
+  @ViewChild(MatTable, { static: true }) table?: MatTable<ITimesheetLine>;
+  @ViewChild('container', { static: true }) containerDiv?: ElementRef;
+  containerScroll?: Observable<any>;
+
+  ngOnInit(): void {
+    this.containerScroll = fromEvent<Event>(this.containerDiv?.nativeElement, 'scroll')
+      .pipe(map((e: Event) => (e.target as Element).scrollLeft));
+  }
 
   getTotalHourForDay(index: number) {
-    return timesheet.lines.map(l => l.entries[index]).reduce((total, e) => total + e.time, 0);
+    return this.TIMESHEET().lines.map(l => l.entries[index]).reduce((total, e) => total + e.time, 0);
   }
 
   getLineTotal(line: ITimesheetLine) {
     return line.entries.reduce((total, e) => total + e.time, 0);
   }
 
+  getWeekTotal(i: number, line?: ITimesheetLine): number {
+    if (line) {
+      return line.entries.slice(i * 7, (i + 1) * 7).map(e => e.time).reduce((v, t) => v + t, 0);
+    }
+    return this.TIMESHEET().lines.reduce((v, l) => v + this.getWeekTotal(i, l), 0);
+  }
+
   getTimesheetTotal() {
-    return timesheet.lines.reduce((total, l) => total + this.getLineTotal(l), 0);
+    return this.TIMESHEET().lines.reduce((total, l) => total + this.getLineTotal(l), 0);
+  }
+
+  deleteLine(line: ITimesheetLine) {
+    this.TIMESHEET.update(t => {
+      t.lines.splice(this.TIMESHEET().lines.indexOf(line), 1);
+      return t;
+    });
+    this.table?.renderRows();
   }
 }
