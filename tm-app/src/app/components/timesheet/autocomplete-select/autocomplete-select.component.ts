@@ -14,6 +14,7 @@ const template = `
     <input #input
            type="text"
            matInput
+           [disabled]="disabled"
            [matAutocomplete]="auto"
            [(ngModel)]="inputValue"
            (input)="handleDelete($event)">
@@ -58,6 +59,7 @@ const styles = `
   styles
 })
 export abstract class AutocompleteSelectComponent<T extends { _id?: string }> implements AfterViewInit, OnInit, OnDestroy {
+  @Input() disabled: boolean = false;
   @Input() value?: string;
   @Output() valueChange = new EventEmitter<string>();
   $selectionChange?: Subscription;
