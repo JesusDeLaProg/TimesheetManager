@@ -13,7 +13,7 @@ export class TimesheetService extends CrudService<ITimesheet> {
     @Inject(USERS) private users: CollectionReference<User>,
     validator: TimesheetValidator,
   ) {
-    super(timesheets, Timesheet, validator);
+    super(timesheets, validator);
   }
 
   protected async authorizeRead(

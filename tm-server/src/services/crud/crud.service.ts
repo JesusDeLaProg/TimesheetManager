@@ -1,6 +1,5 @@
 import { CollectionReference, Query } from '@google-cloud/firestore';
-import { StringId } from '//types/models/datamodels';
-import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { StringId, UserRole } from '//types/models/datamodels';
 import { QueryOptions } from '//dtos/query_options';
 import { User } from '//dtos/user';
 import { ObjectValidator, ValidationResult } from '//types/validator';
@@ -8,9 +7,15 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 export type MutationResult<T> = ValidationResult<T>;
 export class CrudService<T extends { _id?: StringId }> {
+  protected acls?: {
+    read?: Set<UserRole>;
+    create?: Set<UserRole>;
+    update?: Set<UserRole>;
+    delete?: Set<UserRole>;
+  };
+
   constructor(
     private collection: CollectionReference<T>,
-    private objectClass: ClassConstructor<T>,
     private objectValidator: ObjectValidator<T>,
   ) {}
 
@@ -29,7 +34,9 @@ export class CrudService<T extends { _id?: StringId }> {
     if (originalDocumentOrQuery instanceof Query) {
       return null;
     } else {
-      return false;
+      return (
+        !!originalDocumentOrQuery && (this.acls?.read?.has(user.role) ?? false)
+      );
     }
   }
 
@@ -37,7 +44,7 @@ export class CrudService<T extends { _id?: StringId }> {
     user: User,
     updatedDocument: T,
   ): Promise<boolean> {
-    return false;
+    return this.acls?.create?.has(user.role) ?? false;
   }
 
   protected async authorizeUpdate(
@@ -45,13 +52,13 @@ export class CrudService<T extends { _id?: StringId }> {
     originalDocument: T,
     updatedDocument: T,
   ): Promise<boolean> {
-    return false;
+    return this.acls?.update?.has(user.role) ?? false;
   }
   protected async authorizeDelete(
     user: User,
     originalDocument: T,
   ): Promise<boolean> {
-    return false;
+    return this.acls?.delete?.has(user.role) ?? false;
   }
 
   private applyQueryOptions(query: Query<T>, queryOptions?: QueryOptions) {
@@ -133,7 +140,7 @@ export class CrudService<T extends { _id?: StringId }> {
         throw new BadRequestException('id manquant');
       }
       const originalDocument = await this.getById(user, id);
-      const updatedDocument = plainToInstance(this.objectClass, object);
+      const updatedDocument = validationResult.value;
       if (await this.authorizeUpdate(user, originalDocument, updatedDocument)) {
         const docRef = this.collection.doc(id);
         await docRef.set(updatedDocument, { merge: true });

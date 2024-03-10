@@ -25,7 +25,7 @@ export function normalizeDate(
     : value;
 }
 
-export class BaseObjectValidator<T extends { _id?: StringId }>
+export abstract class BaseObjectValidator<T extends { _id?: StringId }>
   implements ObjectValidator<T>
 {
   protected VALIDATORS: ((obj: T) => Promise<ValidationError[]>)[] = [

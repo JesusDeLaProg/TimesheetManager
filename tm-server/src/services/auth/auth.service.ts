@@ -84,7 +84,7 @@ export class AuthService {
       user.password = p;
     } else {
       throw new ForbiddenException(
-        `Mise à jour refusée sur document ${user._id}`,
+        `Changement de mot de passe refusé sur utilisateur ${user._id}`,
       );
     }
   }

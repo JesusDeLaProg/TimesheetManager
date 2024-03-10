@@ -7,7 +7,6 @@ import { User, UserValidator } from '//dtos/user';
 import { QueryOptions } from '//dtos/query_options';
 import { AuthService } from '//services/auth/auth.service';
 import { AuthorizationUtils } from '//utils/authorization';
-import constants from '../../../secrets/constants.json';
 
 @Injectable()
 export class UserService extends CrudService<User> {
@@ -16,7 +15,7 @@ export class UserService extends CrudService<User> {
     validator: UserValidator,
     private authService: AuthService,
   ) {
-    super(users, User, validator);
+    super(users, validator);
   }
 
   protected async authorizeRead(
@@ -106,10 +105,10 @@ export class UserService extends CrudService<User> {
           await this.authService.changePassword(user, res, newPass);
           delete res.password;
         }
-        return Object.assign({
+        return {
           __success: true,
           value: res,
-        });
+        };
       } else {
         throw new ForbiddenException(
           `Création refusée sur ressource ${this.users.path}`,
@@ -122,9 +121,8 @@ export class UserService extends CrudService<User> {
     const newPass = (object as IUser).password;
     delete (object as IUser).password;
     const ret = await super.update(user, object);
-    if (ret.__success && newPass) {
-      if (ret.value.password) {
-        const newPass = ret.value.password;
+    if (ret.__success) {
+      if (newPass) {
         await this.authService.changePassword(user, ret.value, newPass);
       }
       delete ret.value.password;
