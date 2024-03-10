@@ -8,10 +8,9 @@ describe('TimesheetTableHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TimesheetTableHeaderComponent]
-    })
-    .compileComponents();
-    
+      imports: [TimesheetTableHeaderComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(TimesheetTableHeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -27,8 +27,8 @@ const TIMESHEET: ITimesheet = {
         { date: new Date(2024, 0, 17), time: Math.round(Math.random() * 3) },
         { date: new Date(2024, 0, 18), time: Math.round(Math.random() * 3) },
         { date: new Date(2024, 0, 19), time: Math.round(Math.random() * 3) },
-        { date: new Date(2024, 0, 20), time: 0 }
-      ]
+        { date: new Date(2024, 0, 20), time: 0 },
+      ],
     },
     {
       project: '24-02',
@@ -48,12 +48,12 @@ const TIMESHEET: ITimesheet = {
         { date: new Date(2024, 0, 17), time: Math.round(Math.random() * 3) },
         { date: new Date(2024, 0, 18), time: Math.round(Math.random() * 3) },
         { date: new Date(2024, 0, 19), time: Math.round(Math.random() * 3) },
-        { date: new Date(2024, 0, 20), time: 0 }
-      ]
-    }
+        { date: new Date(2024, 0, 20), time: 0 },
+      ],
+    },
   ],
-  roadsheetLines: []
-}
+  roadsheetLines: [],
+};
 
 @Component({
   selector: 'tm-root',

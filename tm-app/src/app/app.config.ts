@@ -10,5 +10,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimations(),
     provideNativeDateAdapter(),
-    {provide: LOCALE_ID, useValue: 'fr-CA' }]
+    { provide: LOCALE_ID, useValue: 'fr-CA' },
+  ],
 };

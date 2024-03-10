@@ -1,11 +1,39 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatAutocompleteModule, MatAutocompleteTrigger, MatOption } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteTrigger,
+  MatOption,
+} from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Observable, Subject, Subscription, filter, fromEvent, map, merge, startWith } from 'rxjs';
-import { IActivity, IPhase, IProject, ProjectType } from '../../../../../../types/models/datamodels';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  filter,
+  fromEvent,
+  map,
+  merge,
+  startWith,
+} from 'rxjs';
+import {
+  IActivity,
+  IPhase,
+  IProject,
+  ProjectType,
+} from '../../../../../../types/models/datamodels';
 import { AsyncPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -56,9 +84,11 @@ const styles = `
     MatInputModule,
   ],
   template,
-  styles
+  styles,
 })
-export abstract class AutocompleteSelectComponent<T extends { _id?: string }> implements AfterViewInit, OnInit, OnDestroy {
+export abstract class AutocompleteSelectComponent<T extends { _id?: string }>
+  implements AfterViewInit, OnInit, OnDestroy
+{
   @Input() disabled: boolean = false;
   @Input() value?: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -70,28 +100,33 @@ export abstract class AutocompleteSelectComponent<T extends { _id?: string }> im
   showClearButton: boolean = true;
 
   @ViewChild('input', { static: true }) input!: ElementRef;
-  @ViewChild(MatAutocompleteTrigger, { static: true }) autocomplete!: MatAutocompleteTrigger;
+  @ViewChild(MatAutocompleteTrigger, { static: true })
+  autocomplete!: MatAutocompleteTrigger;
 
   ngOnInit() {
     const merged = merge(
-      fromEvent(this.input.nativeElement, 'input', (e: any) => e.target.value),
+      fromEvent(
+        this.input.nativeElement,
+        'input',
+        (e: { target: HTMLInputElement }) => e.target.value,
+      ),
       this.forcedInput.asObservable(),
       this.autocomplete.optionSelections.pipe(
-        filter(c => c.source.selected),
-        map(c => c.source.value)
-      )
+        filter((c) => c.source.selected),
+        map((c) => c.source.value),
+      ),
     ).pipe(
       startWith(''),
-      map(value => this.filter(value || ''))
+      map((value) => this.filter(value || '')),
     );
     this.filteredOptions = merged;
     this.$selectionChange = this.autocomplete.optionSelections.subscribe(
-      change => {
+      (change) => {
         if (this.selected === change.source || change.source.selected) {
           this.selected = change.source.selected ? change.source : undefined;
           this.valueChange.emit((this.selected?.value as T)._id || '');
         }
-      }
+      },
     );
   }
 
@@ -105,22 +140,20 @@ export abstract class AutocompleteSelectComponent<T extends { _id?: string }> im
 
   initializeSelection() {
     const chosenOption = this.autocomplete.autocomplete.options.find(
-      option => (option.value as T)._id === this.value);
-      if (chosenOption) {
-        this.selected = chosenOption;
-        this.inputValue = chosenOption.value;
-        chosenOption.select();
-        this.forcedInput.next(this.selected.value);
-      }
+      (option) => (option.value as T)._id === this.value,
+    );
+    if (chosenOption) {
+      this.selected = chosenOption;
+      this.inputValue = chosenOption.value;
+      chosenOption.select();
+      this.forcedInput.next(this.selected.value);
+    }
   }
 
-  displayOption(option?: T) {
-    return '';
-  }
+  abstract displayOption(option?: T): string;
 
   handleDelete(event: Event) {
-    if (this.selected &&
-      (event as InputEvent).inputType.startsWith('delete')) {
+    if (this.selected && (event as InputEvent).inputType.startsWith('delete')) {
       this.clearSelection();
     }
   }
@@ -133,9 +166,7 @@ export abstract class AutocompleteSelectComponent<T extends { _id?: string }> im
     this.selected = undefined;
   }
 
-  protected filter(value: string | T): T[] {
-    return [];
-  }
+  protected abstract filter(value: string | T): T[];
 }
 
 @Component({
@@ -151,15 +182,42 @@ export abstract class AutocompleteSelectComponent<T extends { _id?: string }> im
     MatInputModule,
   ],
   template,
-  styles
+  styles,
 })
 export class ProjectAutocompleteSelectComponent extends AutocompleteSelectComponent<IProject> {
-
   allOptions: IProject[] = [
-    { _id: '19-01', code: '19-01', name: 'Premier projet', type: ProjectType.PUBLIC, client: 'Client 1', isActive: true },
-    { _id: '23-01', code: '23-01', name: 'Deuxième projet', type: ProjectType.PUBLIC, client: 'Client 1', isActive: true },
-    { _id: '24-01', code: '24-01', name: 'Troisième projet', type: ProjectType.PUBLIC, client: 'Client 1', isActive: true },
-    { _id: '24-02', code: '24-02', name: 'Quatrième projet', type: ProjectType.PUBLIC, client: 'Client 1', isActive: true },
+    {
+      _id: '19-01',
+      code: '19-01',
+      name: 'Premier projet',
+      type: ProjectType.PUBLIC,
+      client: 'Client 1',
+      isActive: true,
+    },
+    {
+      _id: '23-01',
+      code: '23-01',
+      name: 'Deuxième projet',
+      type: ProjectType.PUBLIC,
+      client: 'Client 1',
+      isActive: true,
+    },
+    {
+      _id: '24-01',
+      code: '24-01',
+      name: 'Troisième projet',
+      type: ProjectType.PUBLIC,
+      client: 'Client 1',
+      isActive: true,
+    },
+    {
+      _id: '24-02',
+      code: '24-02',
+      name: 'Quatrième projet',
+      type: ProjectType.PUBLIC,
+      client: 'Client 1',
+      isActive: true,
+    },
   ];
 
   override displayOption(option?: IProject) {
@@ -167,7 +225,7 @@ export class ProjectAutocompleteSelectComponent extends AutocompleteSelectCompon
   }
 
   protected override filter(value: string): IProject[] {
-    return this.allOptions.filter(p => p.code.startsWith(value));
+    return this.allOptions.filter((p) => p.code.startsWith(value));
   }
 }
 
@@ -184,14 +242,24 @@ export class ProjectAutocompleteSelectComponent extends AutocompleteSelectCompon
     MatInputModule,
   ],
   template,
-  styles
+  styles,
 })
 export class PhaseAutocompleteSelectComponent extends AutocompleteSelectComponent<IPhase> {
   override showClearButton: boolean = false;
 
   allOptions: IPhase[] = [
-    { _id: '1111', code: 'PH1', name: 'Phase 1', activities: ['aaaa', 'bbbb', 'cccc', 'dddd'] },
-    { _id: '2222', code: 'PH2', name: 'Phase 2', activities: ['aaaa', 'bbbb', 'cccc'] },
+    {
+      _id: '1111',
+      code: 'PH1',
+      name: 'Phase 1',
+      activities: ['aaaa', 'bbbb', 'cccc', 'dddd'],
+    },
+    {
+      _id: '2222',
+      code: 'PH2',
+      name: 'Phase 2',
+      activities: ['aaaa', 'bbbb', 'cccc'],
+    },
     { _id: '3333', code: 'PH3', name: 'Phase 3', activities: ['bbbb', 'cccc'] },
     { _id: '4444', code: 'PH4', name: 'Phase 4', activities: ['dddd'] },
   ];
@@ -201,7 +269,9 @@ export class PhaseAutocompleteSelectComponent extends AutocompleteSelectComponen
   }
 
   protected override filter(value: string | IPhase): IPhase[] {
-    return typeof value === 'string' ? this.allOptions.filter(p => p.code.startsWith(value)) : [value];
+    return typeof value === 'string'
+      ? this.allOptions.filter((p) => p.code.startsWith(value))
+      : [value];
   }
 }
 
@@ -218,7 +288,7 @@ export class PhaseAutocompleteSelectComponent extends AutocompleteSelectComponen
     MatInputModule,
   ],
   template,
-  styles
+  styles,
 })
 export class ActivityAutocompleteSelectComponent extends AutocompleteSelectComponent<IActivity> {
   override showClearButton: boolean = false;
@@ -231,8 +301,18 @@ export class ActivityAutocompleteSelectComponent extends AutocompleteSelectCompo
   }
 
   allPhases: IPhase[] = [
-    { _id: '1111', code: 'PH1', name: 'Phase 1', activities: ['aaaa', 'bbbb', 'cccc', 'dddd'] },
-    { _id: '2222', code: 'PH2', name: 'Phase 2', activities: ['aaaa', 'bbbb', 'cccc'] },
+    {
+      _id: '1111',
+      code: 'PH1',
+      name: 'Phase 1',
+      activities: ['aaaa', 'bbbb', 'cccc', 'dddd'],
+    },
+    {
+      _id: '2222',
+      code: 'PH2',
+      name: 'Phase 2',
+      activities: ['aaaa', 'bbbb', 'cccc'],
+    },
     { _id: '3333', code: 'PH3', name: 'Phase 3', activities: ['bbbb', 'cccc'] },
     { _id: '4444', code: 'PH4', name: 'Phase 4', activities: ['dddd'] },
   ];
@@ -250,10 +330,17 @@ export class ActivityAutocompleteSelectComponent extends AutocompleteSelectCompo
 
   protected override filter(value: string | IActivity): IActivity[] {
     if (typeof value === 'string') {
-      const phase = this._chosenPhase ? this.allPhases.find(p => this._chosenPhase === p._id) : null;
-      return phase ? this.allOptions.filter(a => a.code.startsWith(value) && phase.activities.includes(a._id as string)) : [];
+      const phase = this._chosenPhase
+        ? this.allPhases.find((p) => this._chosenPhase === p._id)
+        : null;
+      return phase
+        ? this.allOptions.filter(
+            (a) =>
+              a.code.startsWith(value) &&
+              phase.activities.includes(a._id as string),
+          )
+        : [];
     }
     return [value];
-    
   }
 }
