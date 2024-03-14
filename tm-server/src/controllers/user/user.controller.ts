@@ -27,12 +27,12 @@ export class UserController {
     return this.userService.create(authUser, user);
   }
 
-  @Get('update')
+  @Post('update')
   async update(@AuthenticatedUser() authUser: User, @Body() user: any) {
     return this.userService.update(authUser, user);
   }
 
-  @Get('validate')
+  @Post('validate')
   async validate(@Body() user: any) {
     return this.userService.validate(user);
   }

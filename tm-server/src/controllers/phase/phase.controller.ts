@@ -27,12 +27,12 @@ export class PhaseController {
     return this.phaseService.create(user, phase);
   }
 
-  @Get('update')
+  @Post('update')
   async update(@AuthenticatedUser() user: User, @Body() phase: any) {
     return this.phaseService.update(user, phase);
   }
 
-  @Get('validate')
+  @Post('validate')
   async validate(@Body() phase: any) {
     return this.phaseService.validate(phase);
   }

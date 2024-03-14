@@ -27,12 +27,12 @@ export class ActivityController {
     return this.activityService.create(user, activity);
   }
 
-  @Get('update')
+  @Post('update')
   async update(@AuthenticatedUser() user: User, @Body() activity: any) {
     return this.activityService.update(user, activity);
   }
 
-  @Get('validate')
+  @Post('validate')
   async validate(@Body() activity: any) {
     return this.activityService.validate(activity);
   }

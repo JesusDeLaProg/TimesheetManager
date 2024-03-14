@@ -27,12 +27,12 @@ export class TimesheetController {
     return this.timesheetService.create(user, timesheet);
   }
 
-  @Get('update')
+  @Post('update')
   async update(@AuthenticatedUser() user: User, @Body() timesheet: any) {
     return this.timesheetService.update(user, timesheet);
   }
 
-  @Get('validate')
+  @Post('validate')
   async validate(@Body() timesheet: any) {
     return this.timesheetService.validate(timesheet);
   }

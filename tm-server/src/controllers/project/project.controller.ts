@@ -27,12 +27,12 @@ export class ProjectController {
     return this.projectService.create(user, project);
   }
 
-  @Get('update')
+  @Post('update')
   async update(@AuthenticatedUser() user: User, @Body() project: any) {
     return this.projectService.update(user, project);
   }
 
-  @Get('validate')
+  @Post('validate')
   async validate(@Body() project: any) {
     return this.projectService.validate(project);
   }
