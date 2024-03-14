@@ -1,0 +1,8 @@
+dist
+secrets
+node_modules
+Dockerfile
+gcloud-config/.terraform
+gcloud-config/.terraform.*
+test
+*.spec.ts

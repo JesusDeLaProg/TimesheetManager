@@ -157,3 +157,4 @@ example/
 secrets/
 gcloud-config/.terraform
 gcloud-config/.terraform.*
+.secrets

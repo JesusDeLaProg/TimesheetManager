@@ -16,7 +16,7 @@ import { JwtStrategy } from './passport/jwt.strategy';
 import { LocalStrategy } from './passport/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { readFileSync } from 'fs';
-import { PUBLIC_KEY } from './config/constants';
+import { DEFAULT_USER, PUBLIC_KEY } from './config/constants';
 import { env } from 'process';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './passport/guards';
@@ -30,7 +30,13 @@ Settings.defaultLocale = 'fr-CA';
 Settings.defaultZone = 'America/New_York';
 
 const privateKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/private_key');
-const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
+const publicKey = env.JWT_PUBLIC_KEY || readFileSync('./secrets/public_key');
+const defaultUser = (() => {
+  if (env.DEFAULT_USER) return JSON.parse(env.DEFAULT_USER);
+  const secretConstants = readFileSync('./secrets/constants.json');
+  if (secretConstants.length) return JSON.parse(secretConstants.toString()).debug_admin_user;
+  return null;
+})();
 
 @Module({
   imports: [
@@ -59,6 +65,7 @@ const publicKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/public_key');
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: PUBLIC_KEY, useValue: publicKey },
+    { provide: DEFAULT_USER, useValue: defaultUser },
     AppService,
     CrudService,
     UserService,

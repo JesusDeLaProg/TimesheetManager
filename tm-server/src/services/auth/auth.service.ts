@@ -6,12 +6,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { USERS } from '//config/constants';
+import { DEFAULT_USER, USERS } from '//config/constants';
 import { CollectionReference } from '@google-cloud/firestore';
 import { User } from '//dtos/user';
 import * as argon2 from 'argon2';
-import constants from '../../../secrets/constants.json';
 import { plainToInstance } from 'class-transformer';
+import { IUser } from '//types/models/datamodels';
 
 export interface JwtTokenPayload {
   name: string;
@@ -25,15 +25,18 @@ export interface JwtTokenPayload {
 export class AuthService {
   constructor(
     @Inject(USERS) private Users: CollectionReference<User>,
+    @Inject(DEFAULT_USER) debugUser: IUser | null,
     private jwtService: JwtService,
   ) {
-    if (constants.debug_admin_user) {
-      Users.where('username', '==', constants.debug_admin_user.username)
+    if (debugUser) {
+      console.log('Debug user provided, looking for its existence. User: ', debugUser);
+      Users.where('username', '==', debugUser.username)
         .limit(1)
         .get()
         .then((res) => {
           if (res.empty) {
-            const u = plainToInstance(User, constants.debug_admin_user);
+            console.log('Debug user does not exist. Creating it.');
+            const u = plainToInstance(User, debugUser);
             const newPass = u.password;
             delete u.password;
             Users.add(u).then((result) => {

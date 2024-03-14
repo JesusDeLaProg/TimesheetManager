@@ -1,0 +1,5 @@
+dist
+secrets
+node_modules
+gcloud-config/.terraform
+gcloud-config/.terraform.*
