@@ -3,15 +3,18 @@ import { Injectable, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Observable, first, firstValueFrom, map, merge } from 'rxjs';
 import { IQueryOptions } from '../../../../types/query_options';
 import { BACK_END_BASE_URL } from '../constants';
+import { MutationResult } from '../../types/interchange';
 
 @Injectable({ providedIn: 'root' })
 export abstract class BaseService<T> implements OnDestroy {
   readonly BASE_URL = inject(BACK_END_BASE_URL);
+  readonly baseUrl: string;
   readonly http = inject(HttpClient);
   readonly cache = new BehaviorSubject<T[]>([]);
   private _cacheUpdateInterval = 0;
 
-  constructor(useCache: boolean, protected baseUrl: string) {
+  constructor(useCache: boolean, baseUrl: string) {
+    this.baseUrl = new URL(baseUrl, this.BASE_URL).href + '/';
     if (useCache) {
       firstValueFrom(this.getWithoutCache({})).then(v => this.cache.next(v));
       this._cacheUpdateInterval = window.setInterval(async () => {
@@ -39,7 +42,7 @@ export abstract class BaseService<T> implements OnDestroy {
   }
 
   protected getWithoutCache(queryOptions: IQueryOptions): Observable<T[]> {
-    return this.http.get<T[]>((new URL('/list', this.baseUrl)).href, { params: queryOptions as any });
+    return this.http.get<T[]>((new URL('list', this.baseUrl)).href, { params: queryOptions as any });
   }
 
   get(queryOptions: IQueryOptions): Observable<T[]> {
@@ -50,7 +53,23 @@ export abstract class BaseService<T> implements OnDestroy {
   }
 
   getById(id: string): Promise<T> {
-    return firstValueFrom(this.http.get<T>(new URL('getbyid/' + id, this.BASE_URL).href));
+    return firstValueFrom(this.http.get<T>(new URL('getbyid/' + id, this.baseUrl).href));
+  }
+
+  create(obj: T): Promise<MutationResult<T>> {
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('create', this.baseUrl).href, obj));
+  }
+
+  update(obj: T): Promise<MutationResult<T>> {
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('update', this.baseUrl).href, obj));
+  }
+
+  validate(obj: T): Promise<MutationResult<T>> {
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('validate', this.baseUrl).href, obj));
+  }
+
+  protected search(query: any, queryOptions: IQueryOptions): Observable<T[]> {
+    return this.http.get<T[]>(new URL('search', this.baseUrl).href, { params: { q: query } });
   }
 
 }

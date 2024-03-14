@@ -5,6 +5,7 @@ import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { provideHttpClient } from '@angular/common/http';
+import { BACK_END_BASE_URL } from './constants';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,5 +14,6 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(),
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'fr-CA' },
+    { provide: BACK_END_BASE_URL, useValue: 'https://localhost:9999' },
   ],
 };
