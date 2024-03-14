@@ -1,4 +1,4 @@
-import { ValidationError } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 
 export type ValidationResult<T> =
   | { __success: true; value: T }
