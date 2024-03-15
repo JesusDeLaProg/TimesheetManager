@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { TimesheetTableComponent } from './components/timesheet/timesheet-table/timesheet-table.component';
 import { ITimesheet } from '../../../types/models/datamodels';
+import { AuthService } from './services/auth.service';
 
 const TIMESHEET: ITimesheet = {
   user: 'Maxime Charland',
@@ -67,4 +68,8 @@ const TIMESHEET: ITimesheet = {
 })
 export class AppComponent {
   timesheet = TIMESHEET;
+
+  constructor(authService: AuthService) {
+    authService.login('admin', 'admin').then(console.log);
+  }
 }

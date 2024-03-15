@@ -25,8 +25,8 @@ export class AuthController {
     const { payload, token } = await this.authService.generateJwt(req.user);
     res.cookie(TM_AUTH_COOKIE, token, {
       httpOnly: true,
-      secure: true,
-      sameSite: true,
+      secure: false,
+      sameSite: 'none',
       maxAge: 3600 * 1000,
     });
     return payload;

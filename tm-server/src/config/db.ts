@@ -2,7 +2,7 @@ import { Firestore } from '@google-cloud/firestore';
 import { env } from 'process';
 
 export const db = new Firestore({
-  projectId: 'timesheet-manager-gcloud',
+  projectId: 'mcharland-dev',
   ignoreUndefinedProperties: true,
 });
 
