@@ -14,4 +14,4 @@ RUN npm run build
 EXPOSE 8080
 EXPOSE 9229
 
-CMD ["node", "--inspect-brk=0.0.0.0:9229", "/usr/src/server/dist/main.js"]
+CMD ["node", "--inspect=0.0.0.0:9229", "/usr/src/server/dist/main.js"]

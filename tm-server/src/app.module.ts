@@ -25,12 +25,15 @@ import { ActivityController } from './controllers/activity/activity.controller';
 import { PhaseController } from './controllers/phase/phase.controller';
 import { ProjectController } from './controllers/project/project.controller';
 import { TimesheetController } from './controllers/timesheet/timesheet.controller';
+import { globSync } from 'glob';
 
 Settings.defaultLocale = 'fr-CA';
 Settings.defaultZone = 'America/New_York';
 
-const privateKey = env.JWT_PRIVATE_KEY || readFileSync('./secrets/private_key');
-const publicKey = env.JWT_PUBLIC_KEY || readFileSync('./secrets/public_key');
+const privateKeyFile = (() => {const f = globSync('./secrets/**/JWT_PRIVATE_KEY'); return f.length > 0 ? f[0] : null;})();
+const publicKeyFile = (() => {const f = globSync('./secrets/**/JWT_PUBLIC_KEY'); return f.length > 0 ? f[0] : null;})();
+const privateKey = env.JWT_PRIVATE_KEY || readFileSync(privateKeyFile);
+const publicKey = env.JWT_PUBLIC_KEY || readFileSync(publicKeyFile);
 const defaultUser = (() => {
   if (env.DEFAULT_USER) return JSON.parse(env.DEFAULT_USER);
   const secretConstants = readFileSync('./secrets/constants.json');

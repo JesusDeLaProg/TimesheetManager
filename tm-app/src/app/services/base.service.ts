@@ -13,7 +13,7 @@ export abstract class BaseService<T> implements OnDestroy {
   readonly cache = new BehaviorSubject<T[]>([]);
   private _cacheUpdateInterval = 0;
 
-  constructor(useCache: boolean, baseUrl: string) {
+  constructor(private useCache: boolean, baseUrl: string) {
     this.baseUrl = new URL(baseUrl, this.BASE_URL).href + '/';
     if (useCache) {
       firstValueFrom(this.getWithoutCache({})).then(v => this.cache.next(v));
@@ -42,34 +42,37 @@ export abstract class BaseService<T> implements OnDestroy {
   }
 
   protected getWithoutCache(queryOptions: IQueryOptions): Observable<T[]> {
-    return this.http.get<T[]>((new URL('list', this.baseUrl)).href, { params: queryOptions as any });
+    return this.http.get<T[]>((new URL('list', this.baseUrl)).href, { withCredentials: true, params: queryOptions as any });
   }
 
-  get(queryOptions: IQueryOptions): Observable<T[]> {
+  get(queryOptions: IQueryOptions, useCache?: boolean): Observable<T[]> {
+    if(!this.useCache || useCache === false) {
+      return this.getWithoutCache(queryOptions);
+    }
     return merge(
-      this.cache.asObservable().pipe(first(), map(v => this.applyQueryOptionsLocally(v, queryOptions))),
+      this.cache.asObservable().pipe(map(v => this.applyQueryOptionsLocally(v, queryOptions)), first()),
       this.getWithoutCache(queryOptions)
     );
   }
 
   getById(id: string): Promise<T> {
-    return firstValueFrom(this.http.get<T>(new URL('getbyid/' + id, this.baseUrl).href));
+    return firstValueFrom(this.http.get<T>(new URL('getbyid/' + id, this.baseUrl).href, { withCredentials: true }));
   }
 
   create(obj: T): Promise<MutationResult<T>> {
-    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('create', this.baseUrl).href, obj));
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('create', this.baseUrl).href, obj, { withCredentials: true }));
   }
 
   update(obj: T): Promise<MutationResult<T>> {
-    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('update', this.baseUrl).href, obj));
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('update', this.baseUrl).href, obj, { withCredentials: true }));
   }
 
   validate(obj: T): Promise<MutationResult<T>> {
-    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('validate', this.baseUrl).href, obj));
+    return firstValueFrom(this.http.post<MutationResult<T>>(new URL('validate', this.baseUrl).href, obj, { withCredentials: true }));
   }
 
   protected search(query: any, queryOptions: IQueryOptions): Observable<T[]> {
-    return this.http.get<T[]>(new URL('search', this.baseUrl).href, { params: { q: query } });
+    return this.http.get<T[]>(new URL('search', this.baseUrl).href, { withCredentials: true, params: { q: query, ...queryOptions as any } });
   }
 
 }

@@ -1,7 +1,15 @@
-import { Inject, Injectable, inject } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { BACK_END_BASE_URL } from '../constants';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+
+export interface AuthTokenPayload {
+  name: string;
+  sub: string;
+  iss: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +21,7 @@ export class AuthService {
     this.baseUrl = new URL('auth', baseUrl).href + '/';
   }
 
-  login(username: string, password: string): Promise<any> {
-    return firstValueFrom(this.http.post(new URL('login', this.baseUrl).href, { username, password }));
+  login(username: string, password: string): Promise<AuthTokenPayload> {
+    return firstValueFrom(this.http.post<AuthTokenPayload>(new URL('login', this.baseUrl).href, { username, password }, { withCredentials: true }));
   }
 }

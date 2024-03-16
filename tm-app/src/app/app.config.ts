@@ -14,6 +14,6 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(),
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'fr-CA' },
-    { provide: BACK_END_BASE_URL, useValue: 'http://localhost:8080' },
+    { provide: BACK_END_BASE_URL, useValue: 'https://tm-server-alpha-25st4ix4ra-nn.a.run.app' },
   ],
 };
